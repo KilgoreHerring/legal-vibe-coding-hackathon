@@ -1,6 +1,34 @@
 # Vibe Coding Hackathon - Facilitator Kit
 
-A 90-minute workshop where law firm trainees build real working apps using Claude Code - no programming experience needed. This repo is everything you need to run it.
+**Run a 90-minute hackathon where lawyers build real, working software by describing what they want, not by writing code.**
+
+## What this is
+
+A complete, self-contained kit for running a vibe coding session with people who have never programmed. Small groups work with a facilitator and [Claude Code](https://claude.com/claude-code): they describe an app that would fix a real problem from their day job, Claude writes it, they test and iterate, and 90 minutes later each group has a working web app and a five-minute pitch.
+
+It came out of real sessions run with law firm trainees, so the framing, examples, and mock data are legal. The structure works for any domain - swap the examples and you can run it with any team.
+
+You don't need to be technical to facilitate. Everything a facilitator says, hands out, or shows is already written: the opening deck, the run sheet, the discovery questions, the design system, and a fake firm's worth of data to build against.
+
+## Who it's for
+
+- Innovation, knowledge, or L&D teams who want to show non-coders what AI-assisted building actually feels like
+- Anyone running an internal hackathon, away-day, or training session where the point is "describe it and it gets built"
+- Facilitators who want a session that runs itself
+
+## What's in the box
+
+- **An opening deck** (`docs/OPENING_DECK.html`) - a 10-minute "art of the possible" intro, ready to present
+- **A full facilitator playbook** - run sheet, per-table guide, discovery questions, design brief, use-case ideas
+- **Four slash commands** - `/kickoff`, `/handover`, `/pickup`, `/present` drive the build and generate the demo deck
+- **A drop-in design system** - every group's app looks polished without anyone touching CSS
+- **Synthetic firm data** (`mockdata/`) - emails, matters, a calendar, sample contracts, and deal data to build against
+- **A worked example** (`example/`) - a complete finished session, so you can see what "good" looks like
+- **A shipping reality check** - what it actually takes to get a prototype into production inside a firm
+
+## The shape of a session
+
+Discovery (find a real problem) → design brief (`/kickoff`) → build with Claude → polish → `/present` → demo. Full timings are in [How to run a session](#how-to-run-a-session) below.
 
 ## Make it yours
 
