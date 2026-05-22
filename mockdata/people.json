@@ -1,0 +1,30 @@
+{
+  "_note": "Fictional firm directory. All names, emails and phone numbers are invented. Anchor date for 'today' is 2026-05-15.",
+  "people": [
+    { "id": "p001", "name": "Catherine Whitfield", "role": "Senior Partner", "practiceGroup": "Corporate", "email": "catherine.whitfield@firm.example", "office": "London", "phone": "020 7000 0101", "qualifiedYear": 1998, "secretary": "p024" },
+    { "id": "p002", "name": "George Pemberton", "role": "Partner", "practiceGroup": "Corporate", "email": "george.pemberton@firm.example", "office": "London", "phone": "020 7000 0102", "qualifiedYear": 2005 },
+    { "id": "p003", "name": "Rohan Patel", "role": "Partner", "practiceGroup": "Employment", "email": "rohan.patel@firm.example", "office": "London", "phone": "020 7000 0103", "qualifiedYear": 2006 },
+    { "id": "p004", "name": "Daniel Asare", "role": "Partner", "practiceGroup": "Banking & Finance", "email": "daniel.asare@firm.example", "office": "London", "phone": "020 7000 0104", "qualifiedYear": 2004 },
+    { "id": "p005", "name": "Aaron Drummond", "role": "Partner", "practiceGroup": "Disputes", "email": "aaron.drummond@firm.example", "office": "Manchester", "phone": "0161 000 0105", "qualifiedYear": 2003 },
+    { "id": "p006", "name": "Bea Mortimer", "role": "Partner", "practiceGroup": "Real Estate", "email": "bea.mortimer@firm.example", "office": "London", "phone": "020 7000 0106", "qualifiedYear": 2007 },
+    { "id": "p007", "name": "Nicola Brent", "role": "Of Counsel", "practiceGroup": "IP", "email": "nicola.brent@firm.example", "office": "London", "phone": "020 7000 0107", "qualifiedYear": 2001 },
+    { "id": "p008", "name": "Hannah Eisler", "role": "Senior Associate", "practiceGroup": "Commercial", "email": "hannah.eisler@firm.example", "office": "London", "phone": "020 7000 0108", "qualifiedYear": 2017 },
+    { "id": "p009", "name": "Tom Bevan", "role": "Senior Associate", "practiceGroup": "Real Estate", "email": "tom.bevan@firm.example", "office": "London", "phone": "020 7000 0109", "qualifiedYear": 2018 },
+    { "id": "p010", "name": "Yasmin Rashid", "role": "Senior Associate", "practiceGroup": "IP", "email": "yasmin.rashid@firm.example", "office": "Leeds", "phone": "0113 000 0110", "qualifiedYear": 2019 },
+    { "id": "p011", "name": "Will Drysdale", "role": "Senior Associate", "practiceGroup": "Banking & Finance", "email": "will.drysdale@firm.example", "office": "London", "phone": "020 7000 0111", "qualifiedYear": 2018 },
+    { "id": "p012", "name": "Sarah Lin", "role": "Associate", "practiceGroup": "Corporate", "email": "sarah.lin@firm.example", "office": "London", "phone": "020 7000 0112", "qualifiedYear": 2022 },
+    { "id": "p013", "name": "Priya Shah", "role": "Associate", "practiceGroup": "Disputes", "email": "priya.shah@firm.example", "office": "London", "phone": "020 7000 0113", "qualifiedYear": 2023 },
+    { "id": "p014", "name": "Anushka Iyer", "role": "Associate", "practiceGroup": "Employment", "email": "anushka.iyer@firm.example", "office": "London", "phone": "020 7000 0114", "qualifiedYear": 2023 },
+    { "id": "p015", "name": "Olivia Park", "role": "Associate", "practiceGroup": "Real Estate", "email": "olivia.park@firm.example", "office": "London", "phone": "020 7000 0115", "qualifiedYear": 2024 },
+    { "id": "p016", "name": "Vikram Chen", "role": "Associate", "practiceGroup": "Tax", "email": "vikram.chen@firm.example", "office": "London", "phone": "020 7000 0116", "qualifiedYear": 2023 },
+    { "id": "p017", "name": "Ines Vargas", "role": "Associate", "practiceGroup": "Data Protection", "email": "ines.vargas@firm.example", "office": "London", "phone": "020 7000 0117", "qualifiedYear": 2024 },
+    { "id": "p018", "name": "Marcus Holloway", "role": "Trainee", "practiceGroup": "Corporate", "email": "marcus.holloway@firm.example", "office": "London", "phone": "020 7000 0118", "currentSeat": "Corporate", "trainingContractStart": "2024-09-02" },
+    { "id": "p019", "name": "Imogen Carr", "role": "Trainee", "practiceGroup": "Disputes", "email": "imogen.carr@firm.example", "office": "London", "phone": "020 7000 0119", "currentSeat": "Disputes", "trainingContractStart": "2024-09-02" },
+    { "id": "p020", "name": "Felix Tran", "role": "Trainee", "practiceGroup": "Employment", "email": "felix.tran@firm.example", "office": "London", "phone": "020 7000 0120", "currentSeat": "Employment", "trainingContractStart": "2024-09-02" },
+    { "id": "p021", "name": "Theo Latham", "role": "Trainee", "practiceGroup": "Banking & Finance", "email": "theo.latham@firm.example", "office": "London", "phone": "020 7000 0121", "currentSeat": "Banking & Finance", "trainingContractStart": "2025-03-03" },
+    { "id": "p022", "name": "Joe Halsey", "role": "Trainee", "practiceGroup": "Commercial", "email": "joe.halsey@firm.example", "office": "London", "phone": "020 7000 0122", "currentSeat": "Commercial", "trainingContractStart": "2025-03-03" },
+    { "id": "p023", "name": "Maddie Frost", "role": "Trainee", "practiceGroup": "Real Estate", "email": "maddie.frost@firm.example", "office": "Leeds", "phone": "0113 000 0123", "currentSeat": "Real Estate", "trainingContractStart": "2025-09-01" },
+    { "id": "p024", "name": "Ella Connors", "role": "Paralegal", "practiceGroup": "Corporate", "email": "ella.connors@firm.example", "office": "London", "phone": "020 7000 0124" },
+    { "id": "p025", "name": "Christine Okafor", "role": "Knowledge Lawyer", "practiceGroup": "Corporate", "email": "christine.okafor@firm.example", "office": "London", "phone": "020 7000 0125", "qualifiedYear": 2010 }
+  ]
+}

@@ -1,0 +1,479 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Trainee Litigation Simulator | Innovation Team</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --navy:   #1A2E44;
+      --teal:   #068FB1;
+      --teal2:  #32BEF0;
+      --gold:   #F9AD23;
+      --white:  #FFFFFF;
+      --body:   #E6E8ED;
+      --muted:  #666B73;
+      --font: "Segoe UI", -apple-system, "Helvetica Neue", Arial, sans-serif;
+    }
+
+    html, body {
+      width: 100%; height: 100%;
+      background: var(--navy);
+      font-family: var(--font);
+      overflow: hidden;
+      cursor: pointer;
+      user-select: none;
+    }
+
+    .deck { width: 100%; height: 100%; position: relative; }
+
+    .slide {
+      position: absolute;
+      inset: 0;
+      display: none;
+      flex-direction: column;
+      background: var(--navy);
+      overflow: hidden;
+    }
+    .slide.active { display: flex; }
+
+    .teal-bar {
+      height: 3px;
+      background: linear-gradient(90deg, #068FB1, #32BEF0);
+      flex-shrink: 0;
+    }
+
+    .wc-blob {
+      position: absolute;
+      width: 600px; height: 600px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, #A8D4E6 0%, #C4A8D6 40%, #E8A0BF 70%, #068FB1 100%);
+      opacity: 0.07;
+      pointer-events: none;
+    }
+
+    .slide-brand {
+      position: absolute;
+      top: 18px; left: 28px;
+      font-size: 0.72rem;
+      font-weight: 600;
+      color: var(--body);
+      opacity: 0.6;
+      letter-spacing: 0.05em;
+      text-transform: uppercase;
+      z-index: 10;
+    }
+
+    .slide-counter {
+      position: absolute;
+      bottom: 20px; right: 28px;
+      font-size: 0.78rem;
+      color: var(--muted);
+      z-index: 10;
+    }
+
+    .nav-hint {
+      position: absolute;
+      bottom: 20px; left: 50%;
+      transform: translateX(-50%);
+      font-size: 0.72rem;
+      color: var(--muted);
+      z-index: 10;
+      letter-spacing: 0.03em;
+    }
+
+    .slide-inner {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      padding: 60px 80px;
+      position: relative;
+      z-index: 5;
+    }
+
+    .tag {
+      display: inline-block;
+      padding: 4px 14px;
+      border-radius: 999px;
+      font-size: 0.72rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      margin-bottom: 20px;
+    }
+    .tag-teal { background: rgba(6,143,177,0.2); color: var(--teal2); border: 1px solid rgba(6,143,177,0.4); }
+    .tag-gold  { background: rgba(249,173,35,0.15); color: var(--gold); border: 1px solid rgba(249,173,35,0.3); }
+
+    h1 {
+      font-size: clamp(2.2rem, 4vw, 3.4rem);
+      font-weight: 700;
+      color: var(--white);
+      line-height: 1.15;
+      margin-bottom: 16px;
+    }
+    h2 {
+      font-size: clamp(1.6rem, 2.8vw, 2.4rem);
+      font-weight: 700;
+      color: var(--white);
+      line-height: 1.2;
+      margin-bottom: 28px;
+    }
+    h2 .accent { color: var(--teal2); }
+    .tagline {
+      font-size: clamp(1rem, 1.6vw, 1.3rem);
+      color: var(--body);
+      line-height: 1.6;
+      max-width: 680px;
+    }
+    .tagline strong { color: var(--gold); }
+
+    .divider {
+      width: 56px; height: 3px;
+      background: linear-gradient(90deg, #068FB1, #32BEF0);
+      border-radius: 2px;
+      margin: 24px 0;
+    }
+
+    .bullets { display: flex; flex-direction: column; gap: 16px; margin-top: 8px; }
+    .bullet { display: flex; gap: 16px; align-items: flex-start; }
+    .bullet-icon {
+      width: 28px; height: 28px;
+      border-radius: 50%;
+      background: rgba(6,143,177,0.15);
+      border: 1px solid rgba(6,143,177,0.3);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 0.8rem;
+      flex-shrink: 0;
+      margin-top: 2px;
+      color: var(--teal2);
+    }
+    .bullet-icon.gold {
+      background: rgba(249,173,35,0.12);
+      border-color: rgba(249,173,35,0.3);
+      color: var(--gold);
+    }
+    .bullet-text { font-size: clamp(0.88rem, 1.2vw, 1rem); color: var(--body); line-height: 1.5; }
+    .bullet-text strong { color: var(--white); }
+    .bullet-text em { color: var(--teal2); font-style: normal; }
+
+    /* TITLE */
+    .title-layout {
+      display: flex; flex-direction: column;
+      align-items: center; justify-content: center;
+      text-align: center; gap: 8px;
+    }
+    .title-layout h1 { font-size: clamp(2.6rem, 5vw, 4.2rem); }
+    .meta-row {
+      display: flex; gap: 20px; align-items: center;
+      margin-top: 40px; flex-wrap: wrap; justify-content: center;
+    }
+    .meta-pill {
+      padding: 6px 18px;
+      border-radius: 999px;
+      font-size: 0.82rem; font-weight: 500;
+      color: var(--body);
+      border: 1px solid rgba(255,255,255,0.15);
+      background: rgba(255,255,255,0.05);
+    }
+
+    /* STAT CARDS */
+    .stats-row { display: flex; gap: 20px; margin-bottom: 32px; }
+    .stat-card {
+      flex: 1;
+      background: rgba(255,255,255,0.04);
+      border: 1px solid rgba(255,255,255,0.1);
+      border-radius: 10px;
+      padding: 18px 20px;
+      text-align: center;
+    }
+    .stat-num { font-size: 2.2rem; font-weight: 800; color: var(--gold); line-height: 1; }
+    .stat-label { font-size: 0.78rem; color: var(--body); opacity: 0.7; margin-top: 4px; }
+
+    /* FEATURE GRID */
+    .feature-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-top: 8px; }
+    .feature-card {
+      background: rgba(255,255,255,0.04);
+      border: 1px solid rgba(255,255,255,0.1);
+      border-radius: 10px;
+      padding: 18px 20px;
+    }
+    .feature-card-title {
+      font-size: 0.88rem; font-weight: 700;
+      color: var(--white); margin-bottom: 6px;
+      display: flex; align-items: center; gap: 8px;
+    }
+    .feature-card-title .dot {
+      width: 8px; height: 8px; border-radius: 50%; background: var(--teal); flex-shrink: 0;
+    }
+    .feature-card p { font-size: 0.82rem; color: var(--body); line-height: 1.5; opacity: 0.85; }
+
+    /* DEMO */
+    .scenario-box {
+      background: rgba(6,143,177,0.08);
+      border: 1px solid rgba(6,143,177,0.25);
+      border-left: 4px solid var(--teal);
+      border-radius: 0 10px 10px 0;
+      padding: 18px 20px;
+      margin-bottom: 24px;
+    }
+    .scenario-label { font-size: 0.7rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.07em; color: var(--teal2); margin-bottom: 6px; }
+    .scenario-box p { font-size: 0.92rem; color: var(--body); line-height: 1.5; }
+    .scenario-box strong { color: var(--white); }
+
+    /* SHIP */
+    .ship-grid { display: flex; flex-direction: column; gap: 12px; }
+    .ship-row {
+      display: flex; gap: 16px; align-items: flex-start;
+      background: rgba(255,255,255,0.03);
+      border: 1px solid rgba(255,255,255,0.08);
+      border-radius: 8px;
+      padding: 14px 16px;
+    }
+    .ship-icon { font-size: 1.2rem; flex-shrink: 0; margin-top: 2px; }
+    .ship-title { font-size: 0.88rem; font-weight: 700; color: var(--white); margin-bottom: 3px; }
+    .ship-desc { font-size: 0.8rem; color: var(--body); opacity: 0.8; line-height: 1.4; }
+
+    /* NEXT STEPS */
+    .next-hero {
+      background: linear-gradient(135deg, rgba(6,143,177,0.15), rgba(249,173,35,0.08));
+      border: 1px solid rgba(6,143,177,0.25);
+      border-radius: 12px;
+      padding: 20px 24px;
+      margin-bottom: 24px;
+    }
+    .next-hero p { font-size: clamp(0.95rem, 1.4vw, 1.1rem); color: var(--white); line-height: 1.5; font-weight: 500; }
+    .closing {
+      margin-top: 24px;
+      padding-top: 18px;
+      border-top: 1px solid rgba(255,255,255,0.1);
+      font-size: clamp(0.9rem, 1.3vw, 1.05rem);
+      color: var(--gold);
+      font-weight: 600;
+      text-align: center;
+    }
+  </style>
+</head>
+<body>
+
+<div class="deck" id="deck">
+
+  <!-- SLIDE 1: TITLE -->
+  <div class="slide active">
+    <div class="teal-bar"></div>
+    <div class="wc-blob" style="top:-200px;right:-150px;"></div>
+    <div class="wc-blob" style="bottom:-250px;left:-100px;width:500px;height:500px;"></div>
+    <div class="slide-brand">Trainee Litigation Simulator</div>
+    <div class="slide-inner title-layout">
+      <div class="tag tag-teal">Innovation Team · May 2026</div>
+      <h1>Trainee Litigation<br>Simulator</h1>
+      <p class="tagline">
+        Practise real litigation tasks.<br>Get <strong>instant, rubric-based AI feedback.</strong> No waiting for a partner.
+      </p>
+      <div class="meta-row">
+        <div class="meta-pill">⚖️ Disputes Seat</div>
+        <div class="meta-pill">🤖 Powered by Claude AI</div>
+        <div class="meta-pill">☁️ Azure-ready</div>
+        <div class="meta-pill">Innovation Team Hackathon</div>
+      </div>
+    </div>
+    <div class="slide-counter">1 / 6</div>
+    <div class="nav-hint">Click or press → to advance</div>
+  </div>
+
+  <!-- SLIDE 2: THE PROBLEM -->
+  <div class="slide">
+    <div class="teal-bar"></div>
+    <div class="wc-blob" style="top:-180px;right:-100px;opacity:0.06;"></div>
+    <div class="slide-brand">Trainee Litigation Simulator</div>
+    <div class="slide-inner">
+      <div class="tag tag-gold">The Problem</div>
+      <h2>Trainees learn to draft<br>by <span class="accent">making mistakes in real matters</span></h2>
+      <div class="divider"></div>
+      <div class="stats-row">
+        <div class="stat-card">
+          <div class="stat-num">5-7h</div>
+          <div class="stat-label">Time for a first-year to draft an LBA and advice note</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-num">0</div>
+          <div class="stat-label">Chances to practise before the real thing</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-num">100%</div>
+          <div class="stat-label">Of feedback comes from stretched partner time</div>
+        </div>
+      </div>
+      <div class="bullets">
+        <div class="bullet">
+          <div class="bullet-icon">1</div>
+          <div class="bullet-text"><strong>No safe space to fail.</strong> A trainee's first LBA is often sent on a real matter. Mistakes reach clients and opponents before a partner catches them.</div>
+        </div>
+        <div class="bullet">
+          <div class="bullet-icon">2</div>
+          <div class="bullet-text"><strong>Feedback is slow and expensive.</strong> Partners review drafts between calls. Trainees wait hours or days and cannot iterate quickly to learn what went wrong.</div>
+        </div>
+        <div class="bullet">
+          <div class="bullet-icon">3</div>
+          <div class="bullet-text"><strong>Key distinctions get missed.</strong> Privilege, the LBA-vs-advice split, remoteness of loss: trainees often do not understand these until they get it wrong in front of a client.</div>
+        </div>
+      </div>
+    </div>
+    <div class="slide-counter">2 / 6</div>
+  </div>
+
+  <!-- SLIDE 3: THE SOLUTION -->
+  <div class="slide">
+    <div class="teal-bar"></div>
+    <div class="wc-blob" style="bottom:-150px;right:-100px;opacity:0.06;"></div>
+    <div class="slide-brand">Trainee Litigation Simulator</div>
+    <div class="slide-inner">
+      <div class="tag tag-teal">What We Built</div>
+      <h2>A realistic litigation exercise<br>with <span class="accent">instant AI grading</span></h2>
+      <div class="divider"></div>
+      <div class="feature-grid">
+        <div class="feature-card">
+          <div class="feature-card-title"><div class="dot"></div>Realistic scenario</div>
+          <p>A fully-fleshed B2B dispute: Fairway Events v Luxe Marquees. Three real documents provided: client instructions, the opponent's LBA, and the underlying contract.</p>
+        </div>
+        <div class="feature-card">
+          <div class="feature-card-title"><div class="dot"></div>Guided three-step exercise</div>
+          <p>Step 1: review the documents. Step 2: draft a 45-point Letter Before Action. Step 3: draft a 40-point privileged Client Advice Note.</p>
+        </div>
+        <div class="feature-card">
+          <div class="feature-card-title"><div class="dot"></div>Rubric-based AI feedback</div>
+          <p>Instant grading against a real marking rubric: score, grade, per-criterion annotations, strengths, and specific improvements. Revise and resubmit as many times as you like.</p>
+        </div>
+        <div class="feature-card">
+          <div class="feature-card-title"><div class="dot"></div>Ask Catherine Osei</div>
+          <p>A floating chat panel powered by an AI supervising partner. Socratic, not prescriptive: she asks questions back rather than giving answers, just like a real supervisor would.</p>
+        </div>
+      </div>
+    </div>
+    <div class="slide-counter">3 / 6</div>
+  </div>
+
+  <!-- SLIDE 4: THE DEMO -->
+  <div class="slide">
+    <div class="teal-bar"></div>
+    <div class="wc-blob" style="top:-100px;left:-200px;opacity:0.06;"></div>
+    <div class="slide-brand">Trainee Litigation Simulator</div>
+    <div class="slide-inner">
+      <div class="tag tag-teal">See It In Action</div>
+      <h2>Meet <span class="accent">Alex</span> — first-year trainee,<br>Disputes seat, day one</h2>
+      <div class="divider"></div>
+      <div class="scenario-box">
+        <div class="scenario-label">The scenario</div>
+        <p>Alex has just received an email from <strong>Catherine Osei (partner)</strong>: a client (Fairway Events) has had a marquee supplier disaster. There is an outstanding LBA from the other side and a client who wants to fight back. Catherine needs a response LBA and an advice note by end of day. <strong>Alex has never done this before.</strong></p>
+      </div>
+      <div class="bullets">
+        <div class="bullet">
+          <div class="bullet-icon">→</div>
+          <div class="bullet-text"><strong>Step 1:</strong> Alex opens the app, reads the client email, the opponent's LBA, and the contract. Clause tags highlight the key provisions.</div>
+        </div>
+        <div class="bullet">
+          <div class="bullet-icon">→</div>
+          <div class="bullet-text"><strong>Step 2:</strong> Alex drafts the LBA and asks Catherine about the liquidated damages clause. She replies: <em>"What does Clause 5.2 say about whether that's a penalty?"</em></div>
+        </div>
+        <div class="bullet">
+          <div class="bullet-icon">→</div>
+          <div class="bullet-text"><strong>Step 3:</strong> Both drafts are submitted and graded. 31/45 on the LBA (missed the Harringtons remoteness issue), 28/40 on the advice note. Alex revises, resubmits, improves.</div>
+        </div>
+      </div>
+    </div>
+    <div class="slide-counter">4 / 6</div>
+  </div>
+
+  <!-- SLIDE 5: WHAT IT WOULD TAKE -->
+  <div class="slide">
+    <div class="teal-bar"></div>
+    <div class="wc-blob" style="bottom:-200px;right:-100px;opacity:0.06;"></div>
+    <div class="slide-brand">Trainee Litigation Simulator</div>
+    <div class="slide-inner">
+      <div class="tag tag-gold">From Prototype to Production</div>
+      <h2>What would it take<br>to <span class="accent">actually ship this?</span></h2>
+      <div class="divider"></div>
+      <div class="ship-grid">
+        <div class="ship-row">
+          <div class="ship-icon">☁️</div>
+          <div>
+            <div class="ship-title">Azure deployment and firm security</div>
+            <div class="ship-desc">The app would live inside the firm's Azure tenant, deployed via Azure Static Web Apps. Claude is available through Azure AI Foundry (Anthropic's enterprise offering on Azure), meaning all API calls stay within the firm's infrastructure, governed by existing data loss prevention and information security policies. Authentication via Microsoft Entra ID: no new logins, no separate credentials.</div>
+          </div>
+        </div>
+        <div class="ship-row">
+          <div class="ship-icon">📋</div>
+          <div>
+            <div class="ship-title">Scenario library and partner sign-off</div>
+            <div class="ship-desc">The rubric and model answer need validation by a litigation partner before trainees are graded against them. Extending to other practice areas (corporate, real estate, employment) requires new scenarios, built collaboratively with supervisors in each seat.</div>
+          </div>
+        </div>
+        <div class="ship-row">
+          <div class="ship-icon">📊</div>
+          <div>
+            <div class="ship-title">Progress tracking and L&amp;D integration</div>
+            <div class="ship-desc">Scores currently live only in the browser session. Connecting to Azure Cosmos DB or an existing HR/L&amp;D system would let supervisors see where trainees are struggling across cohorts and tailor supervision accordingly.</div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="slide-counter">5 / 6</div>
+  </div>
+
+  <!-- SLIDE 6: THE ASK -->
+  <div class="slide">
+    <div class="teal-bar"></div>
+    <div class="wc-blob" style="top:-150px;right:-100px;opacity:0.08;"></div>
+    <div class="wc-blob" style="bottom:-200px;left:-150px;width:500px;height:500px;opacity:0.05;"></div>
+    <div class="slide-brand">Trainee Litigation Simulator</div>
+    <div class="slide-inner">
+      <div class="tag tag-teal">Next Steps</div>
+      <h2>Run a pilot with the<br><span class="accent">next intake of trainees</span></h2>
+      <div class="divider"></div>
+      <div class="next-hero">
+        <p>Give the incoming Disputes seat trainees this exercise in week one, before they touch a live matter. Measure the quality of their first real draft against the cohort that did not use it.</p>
+      </div>
+      <div class="bullets">
+        <div class="bullet">
+          <div class="bullet-icon gold">1</div>
+          <div class="bullet-text"><strong>Who to involve:</strong> L&amp;D lead, IT (Azure), and one litigation partner to validate the rubric. One session, one afternoon to get this production-ready.</div>
+        </div>
+        <div class="bullet">
+          <div class="bullet-icon gold">2</div>
+          <div class="bullet-text"><strong>SRA continuing competence:</strong> The SRA requires solicitors to reflect on and record their professional development. The app can auto-generate a structured reflection record from each completed exercise, linking scores and feedback directly to the SRA Competence Statement. Training evidence, built in.</div>
+        </div>
+        <div class="bullet">
+          <div class="bullet-icon gold">3</div>
+          <div class="bullet-text"><strong>How it grows:</strong> Each seat adds one scenario. The tool becomes a standard part of seat induction across Disputes, Corporate, Real Estate and Employment.</div>
+        </div>
+      </div>
+      <div class="closing">
+        Every trainee deserves a safe space to fail before it matters. This gives them one.
+      </div>
+    </div>
+    <div class="slide-counter">6 / 6</div>
+  </div>
+
+</div>
+
+<script>
+  const slides = document.querySelectorAll('.slide');
+  let current = 0;
+
+  function go(n) {
+    slides[current].classList.remove('active');
+    current = (n + slides.length) % slides.length;
+    slides[current].classList.add('active');
+  }
+
+  document.addEventListener('keydown', e => {
+    if (e.key === 'ArrowRight' || e.key === 'ArrowDown' || e.key === ' ') go(current + 1);
+    if (e.key === 'ArrowLeft'  || e.key === 'ArrowUp')                     go(current - 1);
+  });
+
+  document.getElementById('deck').addEventListener('click', () => go(current + 1));
+</script>
+</body>
+</html>

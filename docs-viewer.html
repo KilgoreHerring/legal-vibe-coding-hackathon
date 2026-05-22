@@ -1,0 +1,625 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Markdown Docs Viewer</title>
+  <style>
+    :root {
+      --np-dark-blue:  #435B76;
+      --np-teal:       #068FB1;
+      --np-teal-hover: #057a98;
+      --np-gold:       #F9AD23;
+      --np-deep-navy:  #1A2E44;
+      --np-mid-grey:   #666B73;
+      --np-pale-grey:  #E6E8ED;
+      --np-surface:    #F5F6F8;
+      --np-white:      #FFFFFF;
+      --np-green:      #26B58D;
+      --np-coral:      #F0785A;
+      --np-amber:      #F9AD23;
+      --np-info-blue:  #32BEF0;
+      --font: "Segoe UI", -apple-system, "Helvetica Neue", Arial, sans-serif;
+      --sidebar-width: 260px;
+    }
+
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: var(--font);
+      background: var(--np-surface);
+      color: var(--np-dark-blue);
+      height: 100vh;
+      display: flex;
+      flex-direction: column;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    /* Top bar */
+    .teal-bar { height: 3px; background: linear-gradient(90deg, #068FB1, #32BEF0); flex-shrink: 0; }
+
+    nav {
+      background: var(--np-deep-navy);
+      padding: 0 24px;
+      height: 52px;
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      flex-shrink: 0;
+    }
+    .nav-brand { font-weight: 700; font-size: 0.95rem; color: var(--np-white); }
+    .nav-tag   { font-size: 0.7rem; color: var(--np-gold); font-weight: 500; letter-spacing: 0.06em; text-transform: uppercase; }
+    .nav-right { margin-left: auto; display: flex; align-items: center; gap: 12px; }
+    .nav-file-label {
+      font-size: 0.8rem;
+      color: var(--np-pale-grey);
+      opacity: 0.7;
+      max-width: 300px;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    /* App shell */
+    .app-shell {
+      display: flex;
+      flex: 1;
+      overflow: hidden;
+    }
+
+    /* Sidebar */
+    .sidebar {
+      width: var(--sidebar-width);
+      background: #1e3550;
+      flex-shrink: 0;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+    }
+    .sidebar-open-btn {
+      margin: 16px 12px 8px;
+      background: var(--np-teal);
+      color: var(--np-white);
+      border: none;
+      border-radius: 6px;
+      padding: 9px 14px;
+      font-family: var(--font);
+      font-size: 0.85rem;
+      font-weight: 500;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      transition: background 0.15s;
+    }
+    .sidebar-open-btn:hover { background: var(--np-teal-hover); }
+    .sidebar-tree {
+      flex: 1;
+      overflow-y: auto;
+      padding: 4px 0 16px;
+    }
+    .sidebar-group-label {
+      font-size: 0.68rem;
+      font-weight: 600;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: #6b8aaa;
+      padding: 12px 16px 4px;
+    }
+    .sidebar-item {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 7px 16px;
+      font-size: 0.83rem;
+      color: #b8cfe0;
+      cursor: pointer;
+      border-left: 3px solid transparent;
+      transition: background 0.1s, color 0.1s;
+      line-height: 1.3;
+    }
+    .sidebar-item:hover { background: rgba(255,255,255,0.06); color: var(--np-white); }
+    .sidebar-item.active {
+      background: rgba(6, 143, 177, 0.2);
+      color: var(--np-white);
+      border-left-color: var(--np-teal);
+    }
+    .sidebar-item svg { flex-shrink: 0; opacity: 0.6; }
+    .sidebar-item.active svg { opacity: 1; }
+
+    /* Scrollbar sidebar */
+    .sidebar-tree::-webkit-scrollbar { width: 4px; }
+    .sidebar-tree::-webkit-scrollbar-track { background: transparent; }
+    .sidebar-tree::-webkit-scrollbar-thumb { background: #3a5570; border-radius: 2px; }
+
+    /* Main content */
+    .content-pane {
+      flex: 1;
+      overflow-y: auto;
+      padding: 40px 48px;
+    }
+    .content-pane::-webkit-scrollbar { width: 6px; }
+    .content-pane::-webkit-scrollbar-track { background: transparent; }
+    .content-pane::-webkit-scrollbar-thumb { background: var(--np-pale-grey); border-radius: 3px; }
+
+    /* Welcome state */
+    .welcome {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      height: 100%;
+      text-align: center;
+      gap: 16px;
+      color: var(--np-mid-grey);
+    }
+    .welcome-icon { font-size: 3rem; opacity: 0.3; }
+    .welcome h2 { font-size: 1.2rem; color: var(--np-dark-blue); font-weight: 600; }
+    .welcome p  { font-size: 0.9rem; max-width: 320px; line-height: 1.6; }
+    .welcome-btn {
+      margin-top: 8px;
+      background: var(--np-teal);
+      color: var(--np-white);
+      border: none;
+      border-radius: 6px;
+      padding: 11px 24px;
+      font-family: var(--font);
+      font-size: 0.95rem;
+      font-weight: 500;
+      cursor: pointer;
+      transition: background 0.15s;
+    }
+    .welcome-btn:hover { background: var(--np-teal-hover); }
+
+    /* Rendered markdown */
+    .md {
+      max-width: 820px;
+      margin: 0 auto;
+    }
+    .md h1 {
+      font-size: 2rem;
+      font-weight: 700;
+      color: var(--np-deep-navy);
+      margin-bottom: 8px;
+      padding-bottom: 12px;
+      border-bottom: 3px solid var(--np-teal);
+      line-height: 1.2;
+    }
+    .md h2 {
+      font-size: 1.35rem;
+      font-weight: 600;
+      color: var(--np-deep-navy);
+      margin-top: 36px;
+      margin-bottom: 12px;
+      padding-bottom: 6px;
+      border-bottom: 1px solid var(--np-pale-grey);
+    }
+    .md h3 {
+      font-size: 1.05rem;
+      font-weight: 600;
+      color: var(--np-dark-blue);
+      margin-top: 24px;
+      margin-bottom: 8px;
+    }
+    .md h4 {
+      font-size: 0.95rem;
+      font-weight: 600;
+      color: var(--np-mid-grey);
+      margin-top: 20px;
+      margin-bottom: 6px;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+    .md p {
+      margin-bottom: 14px;
+      line-height: 1.7;
+      color: var(--np-dark-blue);
+    }
+    .md a { color: var(--np-teal); text-decoration: none; }
+    .md a:hover { text-decoration: underline; }
+    .md strong { font-weight: 600; color: var(--np-deep-navy); }
+    .md em { font-style: italic; }
+    .md hr {
+      border: none;
+      border-top: 1px solid var(--np-pale-grey);
+      margin: 28px 0;
+    }
+    .md ul, .md ol {
+      margin: 0 0 14px 0;
+      padding-left: 24px;
+    }
+    .md li {
+      margin-bottom: 6px;
+      line-height: 1.65;
+      color: var(--np-dark-blue);
+    }
+    .md li > ul, .md li > ol { margin-top: 4px; margin-bottom: 4px; }
+
+    /* Checkboxes */
+    .md .task-item { list-style: none; margin-left: -20px; display: flex; align-items: flex-start; gap: 8px; }
+    .md .task-item input[type="checkbox"] {
+      margin-top: 4px;
+      width: 15px;
+      height: 15px;
+      accent-color: var(--np-teal);
+      flex-shrink: 0;
+    }
+
+    /* Blockquote */
+    .md blockquote {
+      border-left: 4px solid var(--np-teal);
+      padding: 10px 16px;
+      margin: 16px 0;
+      background: rgba(6, 143, 177, 0.05);
+      border-radius: 0 6px 6px 0;
+    }
+    .md blockquote p { margin-bottom: 0; color: var(--np-dark-blue); font-style: italic; }
+
+    /* Tables */
+    .md .table-wrap { overflow-x: auto; margin-bottom: 20px; }
+    .md table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 0.9rem;
+    }
+    .md th {
+      background: var(--np-deep-navy);
+      color: var(--np-white);
+      padding: 10px 14px;
+      text-align: left;
+      font-weight: 600;
+      font-size: 0.82rem;
+      letter-spacing: 0.03em;
+    }
+    .md th:first-child { border-radius: 6px 0 0 0; }
+    .md th:last-child  { border-radius: 0 6px 0 0; }
+    .md td {
+      padding: 9px 14px;
+      border-bottom: 1px solid var(--np-pale-grey);
+      vertical-align: top;
+      line-height: 1.5;
+    }
+    .md tr:nth-child(even) td { background: #fafbfc; }
+    .md tr:last-child td { border-bottom: none; }
+    .md tbody tr:hover td { background: rgba(6, 143, 177, 0.04); }
+
+    /* Code */
+    .md code {
+      font-family: "Cascadia Code", "Fira Code", Consolas, "Courier New", monospace;
+      font-size: 0.85em;
+      background: var(--np-pale-grey);
+      color: #c0392b;
+      padding: 2px 6px;
+      border-radius: 4px;
+    }
+    .md pre {
+      background: var(--np-deep-navy);
+      border-radius: 8px;
+      padding: 20px 22px;
+      margin: 16px 0 20px;
+      overflow-x: auto;
+    }
+    .md pre code {
+      background: none;
+      color: #e0e9f0;
+      font-size: 0.85rem;
+      padding: 0;
+      border-radius: 0;
+      line-height: 1.6;
+    }
+    .md pre::-webkit-scrollbar { height: 4px; }
+    .md pre::-webkit-scrollbar-track { background: transparent; }
+    .md pre::-webkit-scrollbar-thumb { background: #3a5570; border-radius: 2px; }
+  </style>
+</head>
+<body>
+
+<div class="teal-bar"></div>
+<nav>
+  <span class="nav-brand">Docs Viewer</span>
+  <span class="nav-tag">Innovation Team</span>
+  <div class="nav-right">
+    <span class="nav-file-label" id="nav-file-label"></span>
+  </div>
+</nav>
+
+<div class="app-shell">
+
+  <aside class="sidebar">
+    <button class="sidebar-open-btn" onclick="openFolder()">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></svg>
+      Open folder
+    </button>
+    <div class="sidebar-tree" id="sidebar-tree"></div>
+  </aside>
+
+  <main class="content-pane" id="content-pane">
+    <div class="welcome" id="welcome">
+      <div class="welcome-icon">📄</div>
+      <h2>Docs Viewer</h2>
+      <p>Open your hackathon folder to browse and read all markdown guides in one place.</p>
+      <button class="welcome-btn" onclick="openFolder()">Open folder</button>
+    </div>
+  </main>
+
+</div>
+
+<script>
+  // ─── State ────────────────────────────────────────────────────────────────
+  const fileHandles = {};   // path -> FileSystemFileHandle
+  const fileOrder = [       // preferred display order
+    'CLAUDE.md',
+    'docs/SCENE_SETTER.md',
+    'docs/DISCOVERY.md',
+    'docs/DESIGN_BRIEF.md',
+    'docs/USE_CASES.md',
+    'docs/BUILDING_GUIDE.md',
+    'docs/DESIGN.md',
+    'docs/SHIPPING_CHECKLIST.md',
+    'docs/FACILITATOR_GUIDE.md',
+  ];
+  let activePath = null;
+
+  // ─── Folder picker ────────────────────────────────────────────────────────
+  async function openFolder() {
+    try {
+      const dirHandle = await window.showDirectoryPicker({ mode: 'read' });
+      Object.keys(fileHandles).forEach(k => delete fileHandles[k]);
+
+      for await (const [name, handle] of dirHandle.entries()) {
+        if (handle.kind === 'file' && name.endsWith('.md')) {
+          fileHandles[name] = handle;
+        }
+        if (handle.kind === 'directory') {
+          for await (const [subName, subHandle] of handle.entries()) {
+            if (subHandle.kind === 'file' && subName.endsWith('.md')) {
+              fileHandles[`${name}/${subName}`] = subHandle;
+            }
+          }
+        }
+      }
+
+      renderSidebar();
+      // Auto-load first file in preferred order
+      const first = fileOrder.find(p => fileHandles[p]) || Object.keys(fileHandles)[0];
+      if (first) loadFile(first);
+    } catch (err) {
+      if (err.name !== 'AbortError') console.error(err);
+    }
+  }
+
+  // ─── Sidebar ──────────────────────────────────────────────────────────────
+  function renderSidebar() {
+    const tree = document.getElementById('sidebar-tree');
+    if (!Object.keys(fileHandles).length) { tree.innerHTML = ''; return; }
+
+    const sorted = [
+      ...fileOrder.filter(p => fileHandles[p]),
+      ...Object.keys(fileHandles).filter(p => !fileOrder.includes(p)).sort()
+    ];
+
+    const rootFiles = sorted.filter(p => !p.includes('/'));
+    const groups = {};
+    sorted.filter(p => p.includes('/')).forEach(p => {
+      const [dir] = p.split('/');
+      if (!groups[dir]) groups[dir] = [];
+      groups[dir].push(p);
+    });
+
+    let html = '';
+
+    if (rootFiles.length) {
+      html += `<div class="sidebar-group-label">Root</div>`;
+      rootFiles.forEach(p => {
+        html += sidebarItem(p, p.replace('.md', ''));
+      });
+    }
+
+    Object.entries(groups).forEach(([dir, paths]) => {
+      html += `<div class="sidebar-group-label">${dir}/</div>`;
+      paths.forEach(p => {
+        const label = p.split('/').pop().replace('.md', '').replace(/_/g, ' ');
+        html += sidebarItem(p, label);
+      });
+    });
+
+    tree.innerHTML = html;
+  }
+
+  function sidebarItem(path, label) {
+    const isActive = path === activePath ? ' active' : '';
+    return `<div class="sidebar-item${isActive}" onclick="loadFile('${path}')" id="item-${btoa(path).replace(/=/g,'')}">`
+      + `<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>`
+      + label
+      + `</div>`;
+  }
+
+  // ─── File loading ─────────────────────────────────────────────────────────
+  async function loadFile(path) {
+    activePath = path;
+    document.querySelectorAll('.sidebar-item').forEach(el => el.classList.remove('active'));
+    const id = 'item-' + btoa(path).replace(/=/g, '');
+    const el = document.getElementById(id);
+    if (el) el.classList.add('active');
+
+    const label = path.split('/').pop().replace('.md', '');
+    document.getElementById('nav-file-label').textContent = path;
+
+    try {
+      const file = await fileHandles[path].getFile();
+      const text = await file.text();
+      const pane = document.getElementById('content-pane');
+      pane.innerHTML = `<div class="md">${parseMarkdown(text)}</div>`;
+      pane.scrollTop = 0;
+    } catch (err) {
+      console.error(err);
+    }
+  }
+
+  // ─── Markdown parser ──────────────────────────────────────────────────────
+  function escapeHtml(str) {
+    return str.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+  }
+
+  function parseInline(text) {
+    // Protect inline code first
+    const inlineCodes = [];
+    text = text.replace(/`([^`]+)`/g, (_, code) => {
+      inlineCodes.push(code);
+      return `\x00ICODE${inlineCodes.length - 1}\x00`;
+    });
+    // Bold + italic
+    text = text.replace(/\*\*\*(.+?)\*\*\*/g, '<strong><em>$1</em></strong>');
+    text = text.replace(/\*\*(.+?)\*\*/g,     '<strong>$1</strong>');
+    text = text.replace(/__(.+?)__/g,          '<strong>$1</strong>');
+    text = text.replace(/\*(.+?)\*/g,          '<em>$1</em>');
+    text = text.replace(/_(.+?)_/g,            '<em>$1</em>');
+    // Links
+    text = text.replace(/\[([^\]]+)\]\(([^)]+)\)/g, '<a href="$2">$1</a>');
+    // Restore inline code
+    text = text.replace(/\x00ICODE(\d+)\x00/g, (_, i) =>
+      `<code>${escapeHtml(inlineCodes[parseInt(i)])}</code>`
+    );
+    return text;
+  }
+
+  function parseMarkdown(raw) {
+    // ── 1. Extract fenced code blocks ──────────────────────────────────────
+    const codeBlocks = [];
+    raw = raw.replace(/```(\w*)\n?([\s\S]*?)```/g, (_, lang, code) => {
+      codeBlocks.push({ lang, code });
+      return `\x00CODEBLOCK${codeBlocks.length - 1}\x00`;
+    });
+
+    const lines = raw.split('\n');
+    let html = '';
+    let i = 0;
+
+    while (i < lines.length) {
+      const line = lines[i];
+
+      // ── Code block placeholder ───────────────────────────────────────────
+      const cbMatch = line.match(/^\x00CODEBLOCK(\d+)\x00$/);
+      if (cbMatch) {
+        const { lang, code } = codeBlocks[parseInt(cbMatch[1])];
+        html += `<pre><code>${escapeHtml(code.replace(/\n$/, ''))}</code></pre>`;
+        i++; continue;
+      }
+
+      // ── Heading ──────────────────────────────────────────────────────────
+      const hMatch = line.match(/^(#{1,4})\s+(.+)/);
+      if (hMatch) {
+        const level = hMatch[1].length;
+        html += `<h${level}>${parseInline(hMatch[2])}</h${level}>`;
+        i++; continue;
+      }
+
+      // ── Horizontal rule ───────────────────────────────────────────────────
+      if (/^---+$/.test(line.trim()) || /^\*\*\*+$/.test(line.trim())) {
+        html += '<hr>';
+        i++; continue;
+      }
+
+      // ── Blockquote ────────────────────────────────────────────────────────
+      if (line.startsWith('> ')) {
+        let bqLines = [];
+        while (i < lines.length && lines[i].startsWith('> ')) {
+          bqLines.push(lines[i].slice(2));
+          i++;
+        }
+        html += `<blockquote><p>${parseInline(bqLines.join(' '))}</p></blockquote>`;
+        continue;
+      }
+
+      // ── Table ─────────────────────────────────────────────────────────────
+      if (line.startsWith('|') && i + 1 < lines.length && /^\|[-| :]+\|$/.test(lines[i + 1])) {
+        const headers = line.split('|').slice(1, -1).map(c => c.trim());
+        i += 2; // skip header + separator
+        const rows = [];
+        while (i < lines.length && lines[i].startsWith('|')) {
+          rows.push(lines[i].split('|').slice(1, -1).map(c => c.trim()));
+          i++;
+        }
+        html += '<div class="table-wrap"><table>';
+        html += '<thead><tr>' + headers.map(h => `<th>${parseInline(h)}</th>`).join('') + '</tr></thead>';
+        html += '<tbody>';
+        rows.forEach(row => {
+          html += '<tr>' + headers.map((_, hi) => `<td>${parseInline(row[hi] || '')}</td>`).join('') + '</tr>';
+        });
+        html += '</tbody></table></div>';
+        continue;
+      }
+
+      // ── Unordered list ────────────────────────────────────────────────────
+      if (/^(\s*)[-*+] /.test(line)) {
+        html += parseList(lines, i, false);
+        // advance past list
+        const baseIndent = line.match(/^(\s*)/)[1].length;
+        while (i < lines.length && (/^(\s*)[-*+] /.test(lines[i]) || /^(\s{2,})/.test(lines[i])) ) {
+          const ind = lines[i].match(/^(\s*)/)[1].length;
+          if (ind < baseIndent && /^(\s*)[-*+] /.test(lines[i])) break;
+          i++;
+        }
+        continue;
+      }
+
+      // ── Ordered list ──────────────────────────────────────────────────────
+      if (/^\d+\.\s/.test(line)) {
+        html += parseList(lines, i, true);
+        while (i < lines.length && /^\d+\.\s/.test(lines[i])) i++;
+        continue;
+      }
+
+      // ── Blank line ────────────────────────────────────────────────────────
+      if (line.trim() === '') { i++; continue; }
+
+      // ── Paragraph ─────────────────────────────────────────────────────────
+      let paraLines = [];
+      while (i < lines.length && lines[i].trim() !== '' &&
+        !lines[i].startsWith('#') && !lines[i].startsWith('|') &&
+        !lines[i].startsWith('>') && !/^[-*+] /.test(lines[i]) &&
+        !/^\d+\. /.test(lines[i]) && !/^---/.test(lines[i].trim()) &&
+        !/^\x00CODEBLOCK/.test(lines[i])) {
+        paraLines.push(lines[i]);
+        i++;
+      }
+      if (paraLines.length) {
+        html += `<p>${parseInline(paraLines.join(' '))}</p>`;
+      }
+    }
+
+    return html;
+  }
+
+  function parseList(lines, startI, ordered) {
+    // Flatten for simplicity — handles one level + task items
+    const tag = ordered ? 'ol' : 'ul';
+    let html = `<${tag}>`;
+    let i = startI;
+    const pattern = ordered ? /^\d+\.\s+(.*)/ : /^[-*+] (.*)/;
+
+    while (i < lines.length) {
+      const line = lines[i];
+      const m = line.match(pattern);
+      if (!m) break;
+
+      let content = m[1];
+      // Checkbox
+      const cbChecked = content.match(/^\[x\]\s+(.*)/i);
+      const cbUnchecked = content.match(/^\[ \]\s+(.*)/);
+      if (cbChecked) {
+        html += `<li class="task-item"><input type="checkbox" checked disabled>${parseInline(cbChecked[1])}</li>`;
+      } else if (cbUnchecked) {
+        html += `<li class="task-item"><input type="checkbox" disabled>${parseInline(cbUnchecked[1])}</li>`;
+      } else {
+        html += `<li>${parseInline(content)}</li>`;
+      }
+      i++;
+    }
+
+    html += `</${tag}>`;
+    return html;
+  }
+</script>
+</body>
+</html>

@@ -1,0 +1,1469 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Trainee Litigation Simulator</title>
+  <style>
+    :root {
+      --np-dark-blue:  #435B76;
+      --np-teal:       #068FB1;
+      --np-teal-hover: #057a98;
+      --np-gold:       #F9AD23;
+      --np-deep-navy:  #1A2E44;
+      --np-mid-grey:   #666B73;
+      --np-pale-grey:  #E6E8ED;
+      --np-surface:    #F5F6F8;
+      --np-white:      #FFFFFF;
+      --np-green:      #26B58D;
+      --np-coral:      #F0785A;
+      --np-amber:      #F9AD23;
+      --font: "Segoe UI", -apple-system, "Helvetica Neue", Arial, sans-serif;
+      --radius-sm: 6px;
+      --radius-md: 8px;
+      --shadow-card: 0 1px 4px rgba(26,46,68,0.08);
+      --shadow-raised: 0 4px 16px rgba(26,46,68,0.12);
+    }
+
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: var(--font);
+      background: var(--np-surface);
+      color: var(--np-dark-blue);
+      height: 100vh;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    /* ── HEADER ── */
+    .app-header {
+      background: var(--np-deep-navy);
+      flex-shrink: 0;
+    }
+    .header-top {
+      padding: 12px 24px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      border-bottom: 1px solid rgba(255,255,255,0.08);
+    }
+    .header-title {
+      font-size: 0.95rem;
+      font-weight: 700;
+      color: #fff;
+      letter-spacing: 0.01em;
+    }
+    .header-subtitle {
+      font-size: 0.75rem;
+      color: rgba(255,255,255,0.5);
+      margin-top: 2px;
+    }
+    .header-score {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+    .score-text {
+      font-size: 0.8rem;
+      color: rgba(255,255,255,0.6);
+      text-align: right;
+      line-height: 1.4;
+    }
+    .score-text strong { color: var(--np-gold); }
+    .score-bar {
+      width: 100px;
+      height: 4px;
+      background: rgba(255,255,255,0.15);
+      border-radius: 2px;
+      overflow: hidden;
+    }
+    .score-bar-fill {
+      height: 100%;
+      background: linear-gradient(90deg, #068FB1, #F9AD23);
+      border-radius: 2px;
+      transition: width 0.5s ease;
+      width: 0%;
+    }
+
+    /* ── STEP TABS ── */
+    .step-tabs {
+      display: flex;
+      padding: 0 24px;
+    }
+    .step-tab {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 10px 18px 10px 0;
+      font-size: 0.78rem;
+      font-weight: 600;
+      color: rgba(255,255,255,0.4);
+      cursor: pointer;
+      border-bottom: 3px solid transparent;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      transition: color 0.15s, border-color 0.15s;
+      margin-right: 8px;
+      user-select: none;
+    }
+    .step-tab:hover { color: rgba(255,255,255,0.7); }
+    .step-tab.active { color: #fff; border-bottom-color: var(--np-gold); }
+    .step-tab.done { color: rgba(255,255,255,0.6); }
+    .step-num {
+      width: 20px; height: 20px;
+      border-radius: 50%;
+      background: rgba(255,255,255,0.12);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 0.7rem; font-weight: 700;
+      flex-shrink: 0;
+    }
+    .step-tab.active .step-num { background: var(--np-gold); color: var(--np-deep-navy); }
+    .step-tab.done .step-num { background: var(--np-green); color: #fff; font-size: 0.65rem; }
+    .step-pts {
+      font-size: 0.65rem;
+      opacity: 0.6;
+      font-weight: 400;
+      text-transform: none;
+      letter-spacing: 0;
+    }
+
+    /* ── MAIN LAYOUT ── */
+    .app-main {
+      display: flex;
+      flex: 1;
+      overflow: hidden;
+    }
+
+    /* ── DOCS PANEL ── */
+    .docs-panel {
+      width: 42%;
+      flex-shrink: 0;
+      border-right: 1px solid var(--np-pale-grey);
+      display: flex;
+      flex-direction: column;
+      background: var(--np-white);
+    }
+    .panel-label {
+      padding: 10px 16px;
+      font-size: 0.7rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.07em;
+      color: var(--np-mid-grey);
+      background: var(--np-surface);
+      border-bottom: 1px solid var(--np-pale-grey);
+      flex-shrink: 0;
+    }
+    .doc-tabs {
+      display: flex;
+      border-bottom: 1px solid var(--np-pale-grey);
+      background: var(--np-surface);
+      flex-shrink: 0;
+    }
+    .doc-tab {
+      padding: 9px 14px;
+      font-size: 0.78rem;
+      font-weight: 500;
+      color: var(--np-mid-grey);
+      cursor: pointer;
+      border-bottom: 2px solid transparent;
+      white-space: nowrap;
+      transition: color 0.15s, border-color 0.15s;
+    }
+    .doc-tab:hover { color: var(--np-dark-blue); }
+    .doc-tab.active { color: var(--np-teal); border-bottom-color: var(--np-teal); font-weight: 600; }
+    .doc-body {
+      flex: 1;
+      overflow-y: auto;
+      padding: 20px;
+      font-size: 0.85rem;
+      line-height: 1.75;
+    }
+    .doc-body h2 {
+      font-size: 0.95rem;
+      font-weight: 700;
+      color: var(--np-deep-navy);
+      margin-bottom: 4px;
+    }
+    .doc-meta-line {
+      font-size: 0.75rem;
+      color: var(--np-mid-grey);
+      margin-bottom: 16px;
+      padding-bottom: 12px;
+      border-bottom: 1px solid var(--np-pale-grey);
+    }
+    .doc-body h3 {
+      font-size: 0.8rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      color: var(--np-dark-blue);
+      margin: 18px 0 6px;
+    }
+    .doc-body p { margin-bottom: 10px; color: var(--np-dark-blue); }
+    .doc-body ul, .doc-body ol { margin: 0 0 10px 18px; }
+    .doc-body li { margin-bottom: 4px; }
+    .doc-meta-box {
+      background: var(--np-surface);
+      border: 1px solid var(--np-pale-grey);
+      border-radius: var(--radius-sm);
+      padding: 10px 14px;
+      font-size: 0.78rem;
+      margin-bottom: 14px;
+    }
+    .doc-meta-box .row { display: flex; gap: 8px; margin-bottom: 3px; }
+    .doc-meta-box .lbl { font-weight: 600; color: var(--np-mid-grey); min-width: 72px; flex-shrink: 0; }
+    .clause-tag {
+      display: inline-block;
+      padding: 1px 7px;
+      border-radius: 999px;
+      font-size: 0.7rem;
+      font-weight: 600;
+    }
+    .tag-key { background: #FEF0EC; color: var(--np-coral); border: 1px solid var(--np-coral); }
+    .tag-clause { background: #E6F7FD; color: var(--np-teal); border: 1px solid #32BEF0; }
+    .doc-table { width: 100%; border-collapse: collapse; font-size: 0.78rem; margin-bottom: 12px; }
+    .doc-table th { background: var(--np-deep-navy); color: #fff; padding: 7px 10px; text-align: left; font-weight: 600; }
+    .doc-table td { padding: 6px 10px; border-bottom: 1px solid var(--np-pale-grey); }
+    .doc-table tr:nth-child(even) td { background: var(--np-surface); }
+    .doc-total-row td { font-weight: 700; background: var(--np-surface) !important; }
+
+    /* ── TASK PANEL ── */
+    .task-panel {
+      flex: 1;
+      overflow-y: auto;
+      padding: 24px;
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
+
+    /* ── SHARED COMPONENTS ── */
+    .card {
+      background: var(--np-white);
+      border: 1px solid var(--np-pale-grey);
+      border-radius: var(--radius-md);
+      padding: 20px;
+      box-shadow: var(--shadow-card);
+    }
+    .card-title {
+      font-size: 0.8rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      color: var(--np-mid-grey);
+      margin-bottom: 12px;
+    }
+    .task-heading { font-size: 1.1rem; font-weight: 700; color: var(--np-deep-navy); margin-bottom: 4px; }
+    .task-desc { font-size: 0.875rem; color: var(--np-mid-grey); line-height: 1.5; }
+    .pts-badge {
+      display: inline-block;
+      margin-top: 8px;
+      padding: 3px 12px;
+      background: var(--np-deep-navy);
+      color: #fff;
+      border-radius: 999px;
+      font-size: 0.75rem;
+      font-weight: 600;
+    }
+    .callout {
+      padding: 12px 16px;
+      border-radius: var(--radius-sm);
+      font-size: 0.85rem;
+      line-height: 1.5;
+      border-left: 4px solid;
+    }
+    .callout-info { background: #E6F7FD; border-color: var(--np-teal); color: var(--np-dark-blue); }
+    .callout-warn { background: #FEF5E4; border-color: var(--np-gold); color: var(--np-dark-blue); }
+    .callout-danger { background: #FEF0EC; border-color: var(--np-coral); color: var(--np-dark-blue); }
+    .callout strong { color: var(--np-deep-navy); }
+    .req-list { list-style: none; display: flex; flex-direction: column; gap: 6px; }
+    .req-list li {
+      display: flex; gap: 8px; font-size: 0.85rem; line-height: 1.4;
+    }
+    .req-list li::before { content: '→'; color: var(--np-teal); font-weight: 700; flex-shrink: 0; }
+    .req-list li.danger::before { content: '✕'; color: var(--np-coral); }
+    .btn {
+      display: inline-flex; align-items: center; gap: 8px;
+      padding: 10px 20px; border-radius: var(--radius-sm);
+      font-family: var(--font); font-size: 0.9rem; font-weight: 600;
+      cursor: pointer; border: none; transition: background 0.15s;
+      white-space: nowrap;
+    }
+    .btn:disabled { opacity: 0.45; cursor: not-allowed; }
+    .btn-primary { background: var(--np-teal); color: #fff; }
+    .btn-primary:hover:not(:disabled) { background: var(--np-teal-hover); }
+    .btn-gold { background: var(--np-gold); color: var(--np-deep-navy); }
+    .btn-gold:hover:not(:disabled) { background: #e09c1a; }
+    .btn-secondary { background: transparent; color: var(--np-dark-blue); border: 1.5px solid var(--np-pale-grey); }
+    .btn-secondary:hover:not(:disabled) { background: var(--np-surface); }
+    .btn-actions { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; }
+
+    /* ── STEP 1: CHECKLIST ── */
+    .checklist { border: 1px solid var(--np-pale-grey); border-radius: var(--radius-md); overflow: hidden; }
+    .check-item {
+      display: flex; align-items: flex-start; gap: 12px;
+      padding: 14px 16px;
+      border-bottom: 1px solid var(--np-pale-grey);
+      cursor: pointer;
+      transition: background 0.1s;
+    }
+    .check-item:last-child { border-bottom: none; }
+    .check-item:hover { background: var(--np-surface); }
+    .check-item.checked { background: #F0FAF6; }
+    .check-box {
+      width: 22px; height: 22px; flex-shrink: 0;
+      border: 2px solid var(--np-pale-grey);
+      border-radius: 4px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 0.75rem; color: #fff;
+      transition: all 0.15s;
+      margin-top: 1px;
+    }
+    .check-item.checked .check-box { background: var(--np-green); border-color: var(--np-green); }
+    .check-label { font-size: 0.875rem; }
+    .check-label strong { display: block; color: var(--np-deep-navy); font-weight: 600; margin-bottom: 2px; }
+    .check-label small { color: var(--np-mid-grey); font-size: 0.78rem; }
+    .issues-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+    .issue-card {
+      background: var(--np-white);
+      border: 1px solid var(--np-pale-grey);
+      border-radius: var(--radius-sm);
+      padding: 10px 12px;
+      font-size: 0.8rem;
+      line-height: 1.4;
+    }
+    .issue-card small { display: block; color: var(--np-mid-grey); margin-top: 3px; }
+
+    /* ── DRAFT AREA ── */
+    .draft-wrap { position: relative; }
+    .draft-textarea {
+      width: 100%;
+      min-height: 460px;
+      padding: 16px;
+      font-family: Georgia, "Times New Roman", serif;
+      font-size: 0.9rem;
+      line-height: 1.85;
+      border: 2px solid var(--np-pale-grey);
+      border-radius: var(--radius-md);
+      color: var(--np-dark-blue);
+      background: var(--np-white);
+      resize: vertical;
+      transition: border-color 0.15s;
+      outline: none;
+    }
+    .draft-textarea:focus { border-color: var(--np-teal); box-shadow: 0 0 0 3px rgba(6,143,177,0.1); }
+    .draft-meta { display: flex; justify-content: space-between; align-items: center; margin-top: 6px; font-size: 0.78rem; color: var(--np-mid-grey); }
+
+    /* ── GRADING RESULTS ── */
+    .grading-panel { border: 2px solid var(--np-pale-grey); border-radius: var(--radius-md); overflow: hidden; }
+    .grading-header {
+      background: var(--np-deep-navy); color: #fff;
+      padding: 14px 18px;
+      display: flex; align-items: center; justify-content: space-between;
+    }
+    .grading-header-title { font-size: 0.9rem; font-weight: 700; }
+    .grading-header-sub { font-size: 0.75rem; opacity: 0.6; margin-top: 2px; }
+    .score-pill {
+      padding: 4px 16px;
+      border-radius: 999px;
+      font-size: 1.1rem;
+      font-weight: 800;
+    }
+    .score-high { background: #E8FAF5; color: var(--np-green); }
+    .score-mid { background: #FEF5E4; color: #c47d00; }
+    .score-low { background: #FEF0EC; color: var(--np-coral); }
+    .grading-body { padding: 20px; display: flex; flex-direction: column; gap: 16px; }
+    .score-display { text-align: center; background: var(--np-surface); border-radius: var(--radius-sm); padding: 16px; }
+    .score-big { font-size: 3rem; font-weight: 800; color: var(--np-deep-navy); line-height: 1; }
+    .score-big span { font-size: 1.4rem; color: var(--np-mid-grey); font-weight: 400; }
+    .score-pct-bar { height: 6px; background: var(--np-pale-grey); border-radius: 3px; margin: 10px auto; max-width: 180px; overflow: hidden; }
+    .score-pct-fill { height: 100%; background: linear-gradient(90deg, #068FB1, #26B58D); border-radius: 3px; transition: width 0.6s ease; }
+    .score-desc { font-size: 0.85rem; font-weight: 600; margin-top: 4px; }
+    .grade-section-title { font-size: 0.7rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.07em; color: var(--np-mid-grey); margin-bottom: 8px; }
+    .annotation {
+      border-left: 3px solid var(--np-pale-grey);
+      padding: 10px 12px;
+      border-radius: 0 var(--radius-sm) var(--radius-sm) 0;
+      margin-bottom: 8px;
+      font-size: 0.85rem;
+    }
+    .annotation.positive { border-left-color: var(--np-green); background: #F0FAF6; }
+    .annotation.negative { border-left-color: var(--np-coral); background: #FEF0EC; }
+    .annotation.neutral { border-left-color: var(--np-gold); background: #FFFBF0; }
+    .annotation-cat { font-size: 0.68rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; color: var(--np-mid-grey); margin-bottom: 3px; }
+    .annotation-title { font-weight: 600; font-size: 0.82rem; color: var(--np-deep-navy); margin-bottom: 3px; }
+    .annotation-body { color: var(--np-dark-blue); line-height: 1.5; }
+    .annotation-pts { font-size: 0.75rem; font-weight: 700; margin-top: 4px; }
+    .pts-pos { color: var(--np-green); }
+    .pts-neg { color: var(--np-coral); }
+    .strength-item { display: flex; gap: 8px; font-size: 0.85rem; margin-bottom: 6px; color: var(--np-green); }
+    .improve-item { display: flex; gap: 8px; font-size: 0.85rem; margin-bottom: 6px; }
+    .improve-item::before { content: '→'; color: var(--np-teal); flex-shrink: 0; font-weight: 700; }
+    .critical-item {
+      background: #FEF0EC; border-left: 3px solid var(--np-coral);
+      border-radius: 0 var(--radius-sm) var(--radius-sm) 0;
+      padding: 10px 12px; font-size: 0.85rem;
+      color: var(--np-coral); margin-bottom: 8px; font-weight: 500;
+    }
+    .loading-state { text-align: center; padding: 32px; background: var(--np-surface); border-radius: var(--radius-md); }
+    .loading-dots { display: inline-flex; gap: 5px; align-items: center; }
+    .loading-dots span { width: 8px; height: 8px; background: var(--np-teal); border-radius: 50%; animation: bounce 1.2s infinite; }
+    .loading-dots span:nth-child(2) { animation-delay: 0.2s; }
+    .loading-dots span:nth-child(3) { animation-delay: 0.4s; }
+    @keyframes bounce { 0%,80%,100%{transform:scale(0.7);opacity:0.5} 40%{transform:scale(1.1);opacity:1} }
+
+    /* ── API KEY MODAL ── */
+    .modal-overlay {
+      position: fixed; inset: 0;
+      background: rgba(0,0,0,0.55);
+      z-index: 500;
+      display: flex; align-items: center; justify-content: center;
+    }
+    .modal-overlay.hidden { display: none; }
+    .modal-box {
+      background: var(--np-white);
+      border-radius: 12px;
+      padding: 32px;
+      max-width: 420px; width: 90%;
+      box-shadow: var(--shadow-raised);
+    }
+    .modal-title { font-size: 1.1rem; font-weight: 700; color: var(--np-deep-navy); margin-bottom: 6px; }
+    .modal-desc { font-size: 0.875rem; color: var(--np-mid-grey); margin-bottom: 20px; line-height: 1.5; }
+    .form-group { margin-bottom: 16px; }
+    .form-label { display: block; font-size: 0.8rem; font-weight: 600; color: var(--np-dark-blue); margin-bottom: 6px; text-transform: uppercase; letter-spacing: 0.04em; }
+    .form-input {
+      width: 100%; padding: 10px 14px;
+      border: 2px solid var(--np-pale-grey); border-radius: var(--radius-sm);
+      font-size: 0.9rem; font-family: monospace;
+      outline: none; transition: border-color 0.15s;
+    }
+    .form-input:focus { border-color: var(--np-teal); }
+    .form-hint { font-size: 0.75rem; color: var(--np-mid-grey); margin-top: 5px; }
+
+    /* ── SCROLLBAR ── */
+    ::-webkit-scrollbar { width: 5px; }
+    ::-webkit-scrollbar-track { background: transparent; }
+    ::-webkit-scrollbar-thumb { background: var(--np-pale-grey); border-radius: 3px; }
+    ::-webkit-scrollbar-thumb:hover { background: var(--np-mid-grey); }
+
+    /* ── CATHERINE CHAT ── */
+    .chat-container {
+      position: fixed;
+      bottom: 24px; right: 24px;
+      z-index: 200;
+      width: 360px;
+      display: flex;
+      flex-direction: column;
+      align-items: stretch;
+      gap: 8px;
+    }
+    .chat-window {
+      background: var(--np-white);
+      border: 1px solid var(--np-pale-grey);
+      border-radius: 12px;
+      box-shadow: var(--shadow-raised);
+      display: none;
+      flex-direction: column;
+      height: 460px;
+      overflow: hidden;
+    }
+    .chat-window.open { display: flex; }
+    .chat-win-header {
+      background: var(--np-deep-navy);
+      padding: 12px 16px;
+      display: flex; align-items: center; gap: 10px;
+      flex-shrink: 0;
+    }
+    .chat-avatar {
+      width: 34px; height: 34px;
+      background: var(--np-gold);
+      border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      font-weight: 800; font-size: 0.8rem;
+      color: var(--np-deep-navy);
+      flex-shrink: 0;
+    }
+    .chat-win-info { flex: 1; }
+    .chat-win-name { font-size: 0.875rem; font-weight: 700; color: #fff; }
+    .chat-win-role { font-size: 0.72rem; color: rgba(255,255,255,0.55); }
+    .chat-close-btn {
+      background: none; border: none;
+      color: rgba(255,255,255,0.5);
+      font-size: 1.2rem; cursor: pointer; padding: 0 4px;
+      line-height: 1;
+    }
+    .chat-close-btn:hover { color: #fff; }
+    .chat-messages {
+      flex: 1; overflow-y: auto;
+      padding: 14px;
+      display: flex; flex-direction: column; gap: 10px;
+    }
+    .chat-msg { max-width: 88%; font-size: 0.85rem; line-height: 1.5; }
+    .chat-msg.ai { align-self: flex-start; }
+    .chat-msg.user { align-self: flex-end; }
+    .chat-bubble { padding: 9px 12px; border-radius: 10px; }
+    .chat-msg.ai .chat-bubble { background: var(--np-surface); border-radius: 4px 10px 10px 10px; color: var(--np-dark-blue); }
+    .chat-msg.user .chat-bubble { background: var(--np-teal); color: #fff; border-radius: 10px 4px 10px 10px; }
+    .chat-sender { font-size: 0.68rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; color: var(--np-mid-grey); margin-bottom: 3px; }
+    .chat-input-row {
+      padding: 10px 12px;
+      border-top: 1px solid var(--np-pale-grey);
+      display: flex; gap: 8px; align-items: center;
+      flex-shrink: 0;
+    }
+    .chat-input {
+      flex: 1; padding: 8px 12px;
+      border: 1.5px solid var(--np-pale-grey);
+      border-radius: 20px;
+      font-family: var(--font); font-size: 0.875rem;
+      outline: none; transition: border-color 0.15s;
+    }
+    .chat-input:focus { border-color: var(--np-teal); }
+    .chat-send-btn {
+      width: 34px; height: 34px;
+      background: var(--np-teal);
+      border: none; border-radius: 50%;
+      color: #fff; font-size: 1rem;
+      cursor: pointer; flex-shrink: 0;
+      display: flex; align-items: center; justify-content: center;
+      transition: background 0.15s;
+    }
+    .chat-send-btn:hover { background: var(--np-teal-hover); }
+    .chat-send-btn:disabled { opacity: 0.4; cursor: not-allowed; }
+    .chat-toggle-btn {
+      background: var(--np-deep-navy);
+      color: #fff;
+      border: none; border-radius: 50px;
+      padding: 11px 20px;
+      font-family: var(--font); font-size: 0.875rem; font-weight: 600;
+      cursor: pointer;
+      display: flex; align-items: center; justify-content: center; gap: 8px;
+      box-shadow: var(--shadow-raised);
+      transition: background 0.15s;
+    }
+    .chat-toggle-btn:hover { background: #253d5a; }
+    .chat-unread {
+      display: none;
+      width: 8px; height: 8px;
+      background: var(--np-gold);
+      border-radius: 50%;
+    }
+  </style>
+</head>
+<body>
+
+<!-- API KEY MODAL -->
+<div class="modal-overlay hidden" id="apiModal">
+  <div class="modal-box">
+    <div class="modal-title">AI Grading Setup</div>
+    <div class="modal-desc">Enter your Anthropic API key to enable AI-powered feedback on your drafts. Your key is stored only for this browser session.</div>
+    <div class="form-group">
+      <label class="form-label">Anthropic API Key</label>
+      <input type="password" class="form-input" id="apiKeyInput" placeholder="sk-ant-api03-..." />
+      <div class="form-hint">Get a key at console.anthropic.com — starts with sk-ant-</div>
+    </div>
+    <button class="btn btn-primary w-full" style="width:100%;justify-content:center;" onclick="saveKey()">Save & Continue</button>
+  </div>
+</div>
+
+<!-- CATHERINE OSEI CHAT -->
+<div class="chat-container">
+  <div class="chat-window" id="chatWindow">
+    <div class="chat-win-header">
+      <div class="chat-avatar">CO</div>
+      <div class="chat-win-info">
+        <div class="chat-win-name">Catherine Osei</div>
+        <div class="chat-win-role">Partner, Litigation &mdash; Your Supervising Partner</div>
+      </div>
+      <button class="chat-close-btn" onclick="toggleChat()">&#215;</button>
+    </div>
+    <div class="chat-messages" id="chatMessages">
+      <div class="chat-msg ai">
+        <div class="chat-sender">Catherine Osei</div>
+        <div class="chat-bubble">Good morning. I've put you on the Fairway Events matter — Rebecca's been chasing and it's been sitting too long. Read the documents carefully and come back to me with any questions before you start drafting. I want to see the LBA and an advice note. Any questions, I'm here.</div>
+      </div>
+    </div>
+    <div class="chat-input-row">
+      <input class="chat-input" id="chatInput" type="text" placeholder="Ask Catherine a question..." onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();sendChat()}" />
+      <button class="chat-send-btn" id="chatSendBtn" onclick="sendChat()">&#10148;</button>
+    </div>
+  </div>
+  <button class="chat-toggle-btn" onclick="toggleChat()">
+    <span>&#128172;</span>
+    <span>Ask Catherine Osei</span>
+    <span class="chat-unread" id="chatUnread"></span>
+  </button>
+</div>
+
+<!-- APP HEADER -->
+<div class="app-header">
+  <div class="header-top">
+    <div>
+      <div class="header-title">Trainee Litigation Simulator</div>
+      <div class="header-subtitle">Fairway Events Ltd v Luxe Marquees Ltd &mdash; Disputes Seat</div>
+    </div>
+    <div class="header-score">
+      <div class="score-text">
+        <div>85 pts available</div>
+        <div><strong id="totalScoreDisplay">0</strong> / 85 scored</div>
+      </div>
+      <div class="score-bar"><div class="score-bar-fill" id="scoreBarFill"></div></div>
+    </div>
+  </div>
+  <div class="step-tabs">
+    <div class="step-tab active" id="tab1" onclick="goStep(1)">
+      <div class="step-num" id="num1">1</div>
+      Review Documents
+    </div>
+    <div class="step-tab" id="tab2" onclick="goStep(2)">
+      <div class="step-num" id="num2">2</div>
+      Draft LBA
+      <span class="step-pts">45 pts</span>
+    </div>
+    <div class="step-tab" id="tab3" onclick="goStep(3)">
+      <div class="step-num" id="num3">3</div>
+      Advice Note
+      <span class="step-pts">40 pts</span>
+    </div>
+  </div>
+</div>
+
+<!-- MAIN -->
+<div class="app-main">
+
+  <!-- LEFT: DOCUMENT VIEWER -->
+  <div class="docs-panel">
+    <div class="panel-label">Case Documents</div>
+    <div class="doc-tabs">
+      <div class="doc-tab active" onclick="showDoc('email')">Client Instructions</div>
+      <div class="doc-tab" onclick="showDoc('lba')">Barker &amp; Co LBA</div>
+      <div class="doc-tab" onclick="showDoc('contract')">The Contract</div>
+    </div>
+    <div class="doc-body" id="docBody"></div>
+  </div>
+
+  <!-- RIGHT: TASK PANEL -->
+  <div class="task-panel">
+
+    <!-- ══ STEP 1: REVIEW ══ -->
+    <div id="step1">
+      <div class="card">
+        <div class="task-heading">Step 1 &mdash; Review the Documents</div>
+        <div class="task-desc">Read all three case documents carefully before you begin drafting. Tick each one off as you read it. Use the panel on the left to navigate between them.</div>
+      </div>
+
+      <div class="card">
+        <div class="card-title">Reading Checklist</div>
+        <div class="checklist">
+          <div class="check-item" onclick="toggleCheck(this)">
+            <div class="check-box">✓</div>
+            <div class="check-label">
+              <strong>Client Instruction Email</strong>
+              <small>Rebecca Haines, Fairway Events — background, what went wrong, what client wants</small>
+            </div>
+          </div>
+          <div class="check-item" onclick="toggleCheck(this)">
+            <div class="check-box">✓</div>
+            <div class="check-label">
+              <strong>Letter Before Action — Barker &amp; Co</strong>
+              <small>On behalf of Luxe Marquees — claim for £40,858 outstanding balance + interest</small>
+            </div>
+          </div>
+          <div class="check-item" onclick="toggleCheck(this)">
+            <div class="check-box">✓</div>
+            <div class="check-label">
+              <strong>The Contract — Fairway Events / Luxe Marquees, 14 March 2025</strong>
+              <small>Key clauses: 2.2 (time of essence), 3.1/3.2 (quality), 5.1 (LD), 6.1 (indemnity)</small>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-title">Key Issues to Think About</div>
+        <div class="issues-grid">
+          <div class="issue-card">
+            <span class="clause-tag tag-clause">Clause 2.2</span>
+            <small>Time of the essence — installation deadline missed. What does this mean for breach and the LD clause?</small>
+          </div>
+          <div class="issue-card">
+            <span class="clause-tag tag-clause">Clause 5.1</span>
+            <small>£2,000/day LD, capped at £10,000. How many days' delay? Genuine pre-estimate or penalty?</small>
+          </div>
+          <div class="issue-card">
+            <span class="clause-tag tag-clause">Clauses 3.1 / 3.2</span>
+            <small>Equipment must conform to Schedule 1. What was supplied vs what was specified?</small>
+          </div>
+          <div class="issue-card">
+            <span class="clause-tag tag-clause">Clause 6.1</span>
+            <small>Full indemnity for breach, defects and negligence. How does this interact with the guest who tripped?</small>
+          </div>
+          <div class="issue-card">
+            <span class="clause-tag tag-key">Harringtons</span>
+            <small>Revenue vs profit. Remoteness under Hadley v Baxendale. Is this loss within Luxe's contemplation?</small>
+          </div>
+          <div class="issue-card">
+            <span class="clause-tag tag-key">Deposit</span>
+            <small>The event went ahead. Repudiation or affirmation? Total failure of consideration — is this arguable?</small>
+          </div>
+        </div>
+      </div>
+
+      <div class="callout callout-warn">
+        <strong>Remember before you draft:</strong> The LBA goes to the other side — no privileged advice, no strategy, no weakness assessments. The Advice Note is privileged — be candid and realistic. These are two very different documents.
+      </div>
+
+      <div class="btn-actions">
+        <button class="btn btn-primary" onclick="goStep(2)">I've reviewed the documents — start Step 2 →</button>
+      </div>
+    </div>
+
+    <!-- ══ STEP 2: DRAFT LBA ══ -->
+    <div id="step2" style="display:none;">
+      <div class="card">
+        <div class="task-heading">Step 2 &mdash; Draft Letter Before Action</div>
+        <div class="task-desc">Draft a formal LBA on behalf of Fairway Events Ltd, addressed to Barker &amp; Co Solicitors. This letter goes to the other side.</div>
+        <div class="pts-badge">45 points</div>
+      </div>
+
+      <div class="card">
+        <div class="card-title">Your LBA Must Include</div>
+        <ul class="req-list">
+          <li>Clearly identified as a Letter Before Action — reference the Practice Direction (Pre-Action Conduct)</li>
+          <li>Addressed to Barker &amp; Co; explains the delay in responding to their October 2025 letter</li>
+          <li>Disputes the outstanding balance — asserts set-off (your counterclaim exceeds their claim)</li>
+          <li>Identifies the breaches: late installation (Clause 2.2), wrong equipment (Clauses 3.1/3.2), defective workmanship</li>
+          <li>Counterclaim — all six heads of loss: LD (Clause 5.1), replacement furniture (£12,500), replacement lighting (£3,800), overtime (£2,400), deposit (£14,400+VAT), Harringtons loss (to be quantified)</li>
+          <li>Summary table of counterclaim with totals</li>
+          <li>Proposes ADR (mediation) — reference costs consequences</li>
+          <li>Lists documents relied upon</li>
+          <li>Sets a 14-day deadline for response</li>
+          <li class="danger">Do NOT include privileged advice, strategy or weakness assessments — this goes to the other side</li>
+        </ul>
+      </div>
+
+      <div class="card">
+        <div class="card-title">Your Draft</div>
+        <div class="draft-wrap">
+          <textarea class="draft-textarea" id="lbaDraft"
+            placeholder="[YOUR FIRM NAME AND ADDRESS]&#10;[Date]&#10;&#10;BY EMAIL AND FIRST CLASS POST&#10;&#10;FAO: N. Walker, Partner&#10;Barker &amp; Co Solicitors&#10;14 Queen Street&#10;Solihull&#10;B91 3AB&#10;&#10;Dear Sirs,&#10;&#10;RE: FAIRWAY EVENTS LTD v LUXE MARQUEES LTD — LETTER BEFORE ACTION&#10;&#10;We act for Fairway Events Ltd..."
+            oninput="wc('lbaDraft','lbaWC')"></textarea>
+        </div>
+        <div class="draft-meta">
+          <span id="lbaWC">0 words</span>
+          <span>Tip: check the contract clause numbers before you submit</span>
+        </div>
+      </div>
+
+      <div id="lbaLoading" style="display:none;" class="loading-state">
+        <div class="loading-dots"><span></span><span></span><span></span></div>
+        <div style="font-weight:600;color:var(--np-deep-navy);margin-top:12px;">Reviewing your LBA...</div>
+        <div style="font-size:0.8rem;color:var(--np-mid-grey);margin-top:4px;">This usually takes 20–40 seconds</div>
+      </div>
+
+      <div id="lbaResult" style="display:none;"></div>
+
+      <div class="btn-actions">
+        <button class="btn btn-gold" id="lbaSubmitBtn" onclick="submitDraft('lba')">Submit LBA for Grading</button>
+        <span style="font-size:0.8rem;color:var(--np-mid-grey);">AI feedback in ~30 seconds</span>
+      </div>
+
+      <div id="lbaNextActions" style="display:none;" class="card">
+        <div style="font-size:0.875rem;color:var(--np-mid-grey);margin-bottom:12px;">Happy with your LBA? Move on to the Advice Note, or revise and resubmit.</div>
+        <div class="btn-actions">
+          <button class="btn btn-primary" onclick="goStep(3)">Proceed to Step 3 — Advice Note →</button>
+          <button class="btn btn-secondary" onclick="resetDraft('lba')">Revise &amp; Resubmit</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- ══ STEP 3: ADVICE NOTE ══ -->
+    <div id="step3" style="display:none;">
+      <div class="card">
+        <div class="task-heading">Step 3 &mdash; Client Advice Note</div>
+        <div class="task-desc">Prepare a confidential advice note for Rebecca Haines. This is privileged — be candid and balanced. Identify weaknesses honestly.</div>
+        <div class="pts-badge">40 points</div>
+      </div>
+
+      <div class="card">
+        <div class="card-title">Your Advice Note Must Cover</div>
+        <ul class="req-list">
+          <li>Assessment of each head of claim — strengths AND weaknesses with realistic prospects</li>
+          <li>Harringtons loss — remoteness (Hadley v Baxendale), revenue vs profit (deduct costs of performance), mitigation, causation</li>
+          <li>Deposit recovery — identify as the weakest head; analyse total failure of consideration vs affirmation risk</li>
+          <li>Guest who tripped — Clause 6.1 indemnity, contribution under Civil Liability (Contribution) Act 1978, recommend insurer notification</li>
+          <li>Procedural: limitation, track allocation, pre-action delay, ADR recommendation, costs</li>
+          <li>Overall: best-case / realistic / worst-case scenarios with figures; settlement range</li>
+          <li>Practical next steps — what you need from Rebecca (profit margin data, mitigation evidence, guest contact)</li>
+          <li class="danger">This is privileged advice — be candid. No cheerleading. Identify weaknesses honestly.</li>
+        </ul>
+      </div>
+
+      <div class="card">
+        <div class="card-title">Your Draft</div>
+        <div class="draft-wrap">
+          <textarea class="draft-textarea" id="adviceDraft"
+            placeholder="PRIVILEGED AND CONFIDENTIAL — LEGAL ADVICE&#10;&#10;[YOUR FIRM NAME]&#10;[Date]&#10;&#10;TO: Rebecca Haines, Operations Director, Fairway Events Ltd&#10;FROM: [Your name], Trainee Solicitor&#10;RE: Fairway Events Ltd v Luxe Marquees Ltd — Pre-Action Advice&#10;&#10;1. INTRODUCTION&#10;&#10;This note sets out our assessment of the strengths and weaknesses of your position..."
+            oninput="wc('adviceDraft','adviceWC')"></textarea>
+        </div>
+        <div class="draft-meta">
+          <span id="adviceWC">0 words</span>
+          <span>This is privileged — be candid about the weaknesses, especially Harringtons and the deposit</span>
+        </div>
+      </div>
+
+      <div id="adviceLoading" style="display:none;" class="loading-state">
+        <div class="loading-dots"><span></span><span></span><span></span></div>
+        <div style="font-weight:600;color:var(--np-deep-navy);margin-top:12px;">Reviewing your Advice Note...</div>
+        <div style="font-size:0.8rem;color:var(--np-mid-grey);margin-top:4px;">This usually takes 20–40 seconds</div>
+      </div>
+
+      <div id="adviceResult" style="display:none;"></div>
+
+      <div class="btn-actions">
+        <button class="btn btn-gold" id="adviceSubmitBtn" onclick="submitDraft('advice')">Submit Advice Note for Grading</button>
+        <span style="font-size:0.8rem;color:var(--np-mid-grey);">AI feedback in ~30 seconds</span>
+      </div>
+
+      <div id="adviceNextActions" style="display:none;" class="card">
+        <div style="font-size:0.875rem;color:var(--np-mid-grey);margin-bottom:12px;">Exercise complete. Revise and resubmit to improve your score.</div>
+        <div class="btn-actions">
+          <button class="btn btn-secondary" onclick="resetDraft('advice')">Revise &amp; Resubmit</button>
+        </div>
+      </div>
+    </div>
+
+  </div><!-- /task-panel -->
+</div><!-- /app-main -->
+
+<script>
+// ─────────────────────────────────────────
+// STATE
+// ─────────────────────────────────────────
+let apiKey = sessionStorage.getItem('ag_api_key') || '';
+let scores = { lba: null, advice: null };
+
+// ─────────────────────────────────────────
+// DOCUMENT CONTENT
+// ─────────────────────────────────────────
+const docs = {
+  email: `
+    <h2>Client Instruction Email</h2>
+    <div class="doc-meta-line">From: Rebecca Haines, Operations Director — Fairway Events Ltd &nbsp;|&nbsp; Date: 5 February 2026 &nbsp;|&nbsp; CC: Catherine Osei, Partner</div>
+    <p>Dear [Trainee], Catherine said you would be helping with this. I am absolutely at the end of my tether and need this sorted out as soon as possible.</p>
+    <h3>Background</h3>
+    <p>Fairway Events Ltd organises corporate events, weddings, festivals and private functions across the Midlands and South West. I am the Operations Director and sole shareholder — turnover last year was about £1.8 million.</p>
+    <p>In March 2025 we contracted with Luxe Marquees Ltd for a major corporate gala for <strong>Harringtons plc</strong> at Langley Park Estate, Warwick on <strong>19 July 2025</strong>.</p>
+    <h3>The Contract (signed 14 March 2025)</h3>
+    <ul>
+      <li>Premium marquee (500 guests), wooden flooring, LED festoon lighting, silk linings, wooden furniture</li>
+      <li>Installation deadline: <strong>5:00 PM, 17 July 2025</strong> — <span class="clause-tag tag-key">Time of the essence</span></li>
+      <li>Contract price: <strong>£48,000 + VAT</strong></li>
+      <li>Deposit paid: <strong>£14,400 + VAT</strong> (18 March 2025)</li>
+      <li>Balance: £33,600 + VAT — due within 14 days of event</li>
+      <li>Liquidated damages: <span class="clause-tag tag-clause">Clause 5.1</span> <strong>£2,000/day delay, capped £10,000</strong></li>
+      <li>No force majeure clause &mdash; no limitation of liability clause</li>
+    </ul>
+    <h3>What Went Wrong</h3>
+    <p><strong>16 July:</strong> Only 4 workers arrived (promised 8). PM Tom Bradley absent.</p>
+    <p><strong>17 July, 5pm (deadline):</strong> Marquee up but flooring half-laid, lighting not installed, furniture not delivered. Tom said furniture "stuck in warehouse," lighting "damaged in transit."</p>
+    <p><strong>18 July:</strong> Flooring finished by lunchtime. Lighting installed at 4pm but <strong>wrong specification — basic halogen flood lighting, not LED festoon</strong>. Furniture at 5pm but <strong>wrong specification — folding plastic chairs and trestle tables, not premium wooden furniture</strong>. Tom offered 10% discount; refused.</p>
+    <p><strong>18 July evening — emergency action:</strong></p>
+    <ul>
+      <li>Replacement furniture — Elegant Hire Ltd: <strong>£12,500 + VAT</strong></li>
+      <li>Replacement lighting — Brightside Event Lighting: <strong>£3,800 + VAT</strong></li>
+      <li>Staff overtime: <strong>£2,400</strong> (6 staff × 8 hrs × £50/hr — documented in payroll)</li>
+    </ul>
+    <p><strong>19 July — event day:</strong> Torn silk lining panels; noticeable roof sag (visible in photos); flooring creaking and uneven — <strong>one guest tripped and fell (bruising only)</strong>. Seating plans reworked on the day.</p>
+    <h3>After the Event</h3>
+    <p>Harringtons plc (Mark Dunn, Head of Comms) emailed 22 July: venue "fell below the standard we expected," CEO "embarrassed." <strong>Will not use Fairway Events for 2026 gala — worth ~£65,000/year</strong> (3 years running).</p>
+    <p>Outstanding balance of £33,600 + VAT unpaid. Barker &amp; Co LBA dated <strong>2 October 2025 — not responded to</strong> (Catherine on maternity leave). Now February 2026.</p>
+    <h3>What Rebecca Wants</h3>
+    <ol>
+      <li>Counterclaim: furniture (£12,500), lighting (£3,800), overtime (£2,400), LD for 1 day's delay (£2,000)</li>
+      <li>Loss of Harringtons contract — £65,000/year</li>
+      <li>Recovery of deposit — £14,400 + VAT</li>
+      <li>Advice on the guest who tripped</li>
+    </ol>
+    <p><em>Rebecca Haines, Operations Director, Fairway Events Ltd, The Courtyard, Edgbaston, Birmingham B15 3ES</em></p>
+  `,
+  lba: `
+    <h2>Letter Before Action — Barker &amp; Co</h2>
+    <div class="doc-meta-line">N. Walker, Partner &nbsp;|&nbsp; Date: 2 October 2025 &nbsp;|&nbsp; Ref: NW/LM/2025/0847</div>
+    <div class="doc-meta-box">
+      <div class="row"><span class="lbl">From:</span> Barker &amp; Co Solicitors, 14 Queen Street, Solihull, B91 3AB</div>
+      <div class="row"><span class="lbl">To:</span> The Directors, Fairway Events Ltd, The Courtyard, Edgbaston, B15 3ES</div>
+      <div class="row"><span class="lbl">Re:</span> Luxe Marquees Ltd — Outstanding Invoice</div>
+    </div>
+    <p>We act for Luxe Marquees Ltd ("our client"). This letter constitutes a <strong>Letter Before Action</strong> in accordance with the Practice Direction — Pre-Action Conduct and Protocols and the Pre-Action Protocol for Debt Claims.</p>
+    <h3>The Claim</h3>
+    <ol>
+      <li>Our client agreed to supply and install marquee equipment at Langley Park Estate for an event on 19 July 2025.</li>
+      <li>Total contract price: £48,000 + VAT (£57,600).</li>
+      <li>Deposit paid: £14,400 + VAT (£17,280) on 18 March 2025.</li>
+      <li>Balance of £33,600 + VAT (£40,320) was due by 2 August 2025.</li>
+      <li><strong>Our client duly supplied and installed the marquee and associated equipment in accordance with the Contract.</strong></li>
+      <li>Outstanding balance of £40,320 remains unpaid despite invoices of 15 August and 10 September 2025.</li>
+      <li>Contractual interest at 4% above Bank of England base rate — approximately <strong>£538</strong> to date.</li>
+    </ol>
+    <h3>Total Amount Claimed</h3>
+    <table class="doc-table">
+      <tr><td>Outstanding balance (inc. VAT)</td><td><strong>£40,320.00</strong></td></tr>
+      <tr><td>Contractual interest to date</td><td><strong>£538.00</strong></td></tr>
+      <tr class="doc-total-row"><td><strong>Total</strong></td><td><strong>£40,858.00</strong></td></tr>
+    </table>
+    <p style="font-size:0.78rem;color:var(--np-mid-grey);">Interest continues to accrue at ~£6.65/day.</p>
+    <h3>Response Required (by 16 October 2025)</h3>
+    <p>Pay £40,858.00; <strong>OR</strong> provide a full written response including any defence or counterclaim within 14 days.</p>
+    <h3>ADR</h3>
+    <p>Our client is willing in principle to engage in mediation or other ADR, provided your company first acknowledges the debt or provides a substantive response.</p>
+    <h3>Documents Enclosed</h3>
+    <ul>
+      <li>Contract dated 14 March 2025</li>
+      <li>Invoice dated 15 August 2025</li>
+      <li>Statement of account</li>
+      <li>Information Sheet and Reply Form (Pre-Action Protocol for Debt Claims)</li>
+    </ul>
+    <p><em>N. Walker, Partner — Litigation Department, Barker &amp; Co Solicitors</em></p>
+  `,
+  contract: `
+    <h2>The Contract</h2>
+    <div class="doc-meta-line">Fairway Events Ltd / Luxe Marquees Ltd &nbsp;|&nbsp; Signed: 14 March 2025</div>
+    <div class="doc-meta-box">
+      <div class="row"><span class="lbl">Supplier:</span> Luxe Marquees Ltd (Co. No. 10987654), 28 Stratford Road, Shirley, Solihull B90 3BH</div>
+      <div class="row"><span class="lbl">Client:</span> Fairway Events Ltd (Co. No. 11234567), The Courtyard, Edgbaston, Birmingham B15 3ES</div>
+      <div class="row"><span class="lbl">Gov. Law:</span> England and Wales</div>
+    </div>
+    <h3>Clause 1 — Definitions</h3>
+    <ul>
+      <li>"The Event" — corporate gala at Langley Park Estate, 19 July 2025</li>
+      <li>"The Equipment" — marquee, flooring, lighting and furniture per Schedule 1</li>
+      <li>"The Installation Date" — <strong>17 July 2025</strong></li>
+      <li>"The Contract Price" — <strong>£48,000 + VAT</strong></li>
+    </ul>
+    <h3>Clause 2 — Supply and Installation</h3>
+    <p><strong>2.2 <span class="clause-tag tag-key">KEY</span> Installation shall be completed no later than 5:00 PM on 17 July 2025. Time is of the essence in respect of this obligation.</strong></p>
+    <h3>Clause 3 — Quality and Specification</h3>
+    <p><strong>3.1</strong> All Equipment shall be of <strong>satisfactory quality, fit for purpose and free from material defects</strong>.</p>
+    <p><strong>3.2</strong> Equipment shall <strong>conform in all material respects to Schedule 1</strong>.</p>
+    <p><strong>3.3</strong> If Equipment does not conform to 3.1 or 3.2, Client may require <strong>replacement or rectification at Supplier's cost</strong>, without prejudice to other remedies.</p>
+    <h3>Clause 4 — Price and Payment</h3>
+    <p><strong>4.2(a)</strong> Deposit: 30% = <strong>£14,400 + VAT</strong> — payable on signing.</p>
+    <p><strong>4.2(b)</strong> Balance: 70% = <strong>£33,600 + VAT</strong> — payable within 14 days of the Event.</p>
+    <p><strong>4.4</strong> Interest on overdue sums: <strong>4% above Bank of England base rate</strong>.</p>
+    <h3>Clause 5 — Liquidated Damages <span class="clause-tag tag-key">KEY</span></h3>
+    <p><strong>5.1</strong> If Supplier fails to complete installation by the Installation Date, Client may deduct <strong>£2,000 per day (or part thereof)</strong>, up to a maximum of <strong>£10,000</strong>.</p>
+    <p><strong>5.2</strong> Parties agree these sums are a <strong>genuine pre-estimate of loss and not a penalty</strong>.</p>
+    <p><strong>5.3</strong> LD rights are without prejudice to all other rights and remedies.</p>
+    <h3>Clause 6 — Indemnity <span class="clause-tag tag-key">KEY</span></h3>
+    <p><strong>6.1</strong> Supplier shall indemnify Client against all losses, damages, costs (including legal costs) arising from: (a) breach of this Agreement; (b) any defect in Equipment; (c) any negligent act or omission of Supplier, employees, agents or subcontractors.</p>
+    <h3>Clause 7 — Insurance</h3>
+    <p>Supplier to maintain public liability (min. £5m), employer's liability, product liability (min. £5m).</p>
+    <h3>Clause 8 — Termination</h3>
+    <p><strong>8.2</strong> Client may terminate <strong>immediately</strong> if Supplier fails to complete by Installation Date.</p>
+    <h3>Schedule 1 — Equipment Specification</h3>
+    <table class="doc-table">
+      <thead><tr><th>Item</th><th>Specification</th><th>Actually Supplied</th></tr></thead>
+      <tbody>
+        <tr><td>Marquee</td><td>Premium clearspan 30m×20m, white PVC, cap. 500</td><td>✓ (with defects)</td></tr>
+        <tr><td>Flooring</td><td>Engineered oak-effect, 600 sq m, level</td><td>✓ (creaking, uneven)</td></tr>
+        <tr><td>Lighting</td><td><strong>LED festoon warm white; 6×uplighters; 2×chandeliers</strong></td><td>✗ Halogen flood lights</td></tr>
+        <tr><td>Silk linings</td><td>Ivory silk pleated, full coverage</td><td>✓ (2 panels torn)</td></tr>
+        <tr><td>Tables</td><td><strong>Round wooden banqueting, 180cm, dark oak ×50</strong></td><td>✗ Trestle tables</td></tr>
+        <tr><td>Chairs</td><td><strong>Wooden cross-back, dark oak, ivory cushions ×500</strong></td><td>✗ Folding plastic chairs</td></tr>
+        <tr><td>Dance floor</td><td>8m×8m parquet effect</td><td>—</td></tr>
+        <tr><td>Stage</td><td>6m×4m×0.6m raised platform</td><td>—</td></tr>
+      </tbody>
+    </table>
+  `
+};
+
+// ─────────────────────────────────────────
+// NAVIGATION
+// ─────────────────────────────────────────
+function goStep(n) {
+  [1,2,3].forEach(i => {
+    document.getElementById('step'+i).style.display = i===n ? 'flex' : 'none';
+    document.getElementById('step'+i).style.flexDirection = 'column';
+    document.getElementById('step'+i).style.gap = '16px';
+    const tab = document.getElementById('tab'+i);
+    const num = document.getElementById('num'+i);
+    tab.className = 'step-tab' + (i===n ? ' active' : (i<n ? ' done' : ''));
+    num.textContent = i<n ? '✓' : i;
+  });
+  document.querySelector('.task-panel').scrollTop = 0;
+}
+
+// ─────────────────────────────────────────
+// DOCUMENT VIEWER
+// ─────────────────────────────────────────
+function showDoc(key) {
+  document.getElementById('docBody').innerHTML = docs[key];
+  document.querySelectorAll('.doc-tab').forEach((t,i) => {
+    const keys = ['email','lba','contract'];
+    t.classList.toggle('active', keys[i]===key);
+  });
+}
+
+// ─────────────────────────────────────────
+// CHECKLIST
+// ─────────────────────────────────────────
+function toggleCheck(el) { el.classList.toggle('checked'); }
+
+// ─────────────────────────────────────────
+// WORD COUNT
+// ─────────────────────────────────────────
+function wc(taId, wcId) {
+  const txt = document.getElementById(taId).value.trim();
+  const n = txt ? txt.split(/\s+/).length : 0;
+  document.getElementById(wcId).textContent = n.toLocaleString() + ' words';
+}
+
+// ─────────────────────────────────────────
+// API KEY
+// ─────────────────────────────────────────
+function saveKey() {
+  const k = document.getElementById('apiKeyInput').value.trim();
+  if (!k.startsWith('sk-ant')) { alert('Please enter a valid Anthropic API key (starts with sk-ant-)'); return; }
+  apiKey = k;
+  sessionStorage.setItem('ag_api_key', k);
+  document.getElementById('apiModal').classList.add('hidden');
+  // retry pending submission if any
+  if (window._pendingSubmit) { window._pendingSubmit(); window._pendingSubmit = null; }
+}
+
+function requireKey(cb) {
+  if (apiKey) { cb(); return; }
+  window._pendingSubmit = cb;
+  document.getElementById('apiModal').classList.remove('hidden');
+}
+
+// ─────────────────────────────────────────
+// SUBMIT & GRADE
+// ─────────────────────────────────────────
+async function submitDraft(type) {
+  const draftId = type==='lba' ? 'lbaDraft' : 'adviceDraft';
+  const draft = document.getElementById(draftId).value.trim();
+  if (draft.length < 300) { alert('Please write a more complete draft before submitting.'); return; }
+
+  requireKey(async () => {
+    const btnId = type==='lba' ? 'lbaSubmitBtn' : 'adviceSubmitBtn';
+    const loadId = type==='lba' ? 'lbaLoading' : 'adviceLoading';
+    const resultId = type==='lba' ? 'lbaResult' : 'adviceResult';
+    const nextId = type==='lba' ? 'lbaNextActions' : 'adviceNextActions';
+
+    document.getElementById(btnId).disabled = true;
+    document.getElementById(btnId).textContent = 'Grading...';
+    document.getElementById(loadId).style.display = 'block';
+    document.getElementById(resultId).style.display = 'none';
+    document.getElementById(nextId).style.display = 'none';
+
+    try {
+      const sys = type==='lba' ? lbaSystemPrompt() : adviceSystemPrompt();
+      const raw = await callClaude(sys, 'Here is my draft:\n\n' + draft, 4096);
+      const result = parseResult(raw);
+      scores[type] = result.score || 0;
+      updateScore();
+      renderResult(result, type, resultId);
+      document.getElementById(nextId).style.display = 'block';
+    } catch(e) {
+      document.getElementById(resultId).innerHTML = `<div class="callout callout-danger"><strong>Error:</strong> ${e.message}. Check your API key and try again.</div>`;
+      document.getElementById(resultId).style.display = 'block';
+    }
+
+    document.getElementById(loadId).style.display = 'none';
+    document.getElementById(btnId).disabled = false;
+    document.getElementById(btnId).textContent = 'Resubmit for Grading';
+  });
+}
+
+function resetDraft(type) {
+  const resultId = type==='lba' ? 'lbaResult' : 'adviceResult';
+  const nextId = type==='lba' ? 'lbaNextActions' : 'adviceNextActions';
+  const btnId = type==='lba' ? 'lbaSubmitBtn' : 'adviceSubmitBtn';
+  document.getElementById(resultId).style.display = 'none';
+  document.getElementById(nextId).style.display = 'none';
+  document.getElementById(btnId).textContent = 'Submit for Grading';
+  const taId = type==='lba' ? 'lbaDraft' : 'adviceDraft';
+  document.getElementById(taId).focus();
+  document.querySelector('.task-panel').scrollTop = 0;
+}
+
+// ─────────────────────────────────────────
+// CLAUDE API CALL
+// ─────────────────────────────────────────
+async function callClaude(system, user, maxTokens) {
+  const res = await fetch('https://api.anthropic.com/v1/messages', {
+    method: 'POST',
+    headers: {
+      'content-type': 'application/json',
+      'x-api-key': apiKey,
+      'anthropic-version': '2023-06-01',
+      'anthropic-dangerous-direct-browser-access': 'true'
+    },
+    body: JSON.stringify({
+      model: 'claude-sonnet-4-6',
+      max_tokens: maxTokens,
+      system,
+      messages: [{ role: 'user', content: user }]
+    })
+  });
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({}));
+    throw new Error(err.error?.message || 'API error ' + res.status);
+  }
+  const data = await res.json();
+  return data.content[0].text;
+}
+
+// ─────────────────────────────────────────
+// PARSE JSON FROM RESPONSE
+// ─────────────────────────────────────────
+function parseResult(raw) {
+  try {
+    const m = raw.match(/```json\s*([\s\S]*?)\s*```/) || raw.match(/(\{[\s\S]*\})/);
+    if (m) return JSON.parse(m[1]);
+    return JSON.parse(raw);
+  } catch {
+    return {
+      score: 0, max_score: 45, grade: 'Refer',
+      overall_comment: raw,
+      annotations: [], strengths: [], improvements: [], critical_errors: []
+    };
+  }
+}
+
+// ─────────────────────────────────────────
+// RENDER GRADING RESULT
+// ─────────────────────────────────────────
+function renderResult(r, type, elId) {
+  const max = type==='lba' ? 45 : 40;
+  const score = Math.max(0, Math.min(r.score||0, max));
+  const pct = Math.round(score/max*100);
+  let cls = pct>=70?'score-high':pct>=50?'score-mid':'score-low';
+  let desc = pct>=70?'Strong work':pct>=50?'Good attempt — room to improve':'Needs significant revision';
+
+  const annotations = (r.annotations||[]).map(a => `
+    <div class="annotation ${a.type||'neutral'}">
+      <div class="annotation-cat">${a.category||''}</div>
+      <div class="annotation-title">${a.title||''}</div>
+      <div class="annotation-body">${a.comment||''}</div>
+      ${(a.points||0)!==0 ? `<div class="annotation-pts ${(a.points||0)>0?'pts-pos':'pts-neg'}">${(a.points||0)>0?'+':''}${a.points} pts</div>` : ''}
+    </div>`).join('');
+
+  const strengths = (r.strengths||[]).map(s=>`<div class="strength-item"><span>✓</span><span>${s}</span></div>`).join('');
+  const improvements = (r.improvements||[]).map(s=>`<div class="improve-item">${s}</div>`).join('');
+  const criticals = (r.critical_errors||[]).filter(Boolean).map(s=>`<div class="critical-item">⚠ ${s}</div>`).join('');
+
+  const el = document.getElementById(elId);
+  el.style.display = 'block';
+  el.innerHTML = `
+    <div class="grading-panel">
+      <div class="grading-header">
+        <div>
+          <div class="grading-header-title">Feedback — ${type==='lba'?'Letter Before Action':'Client Advice Note'}</div>
+          <div class="grading-header-sub">${r.grade||''}</div>
+        </div>
+        <div class="score-pill ${cls}">${score} / ${max}</div>
+      </div>
+      <div class="grading-body">
+        <div class="score-display">
+          <div class="score-big">${score}<span> / ${max}</span></div>
+          <div class="score-pct-bar"><div class="score-pct-fill" style="width:${pct}%"></div></div>
+          <div class="score-desc" style="color:${pct>=70?'var(--np-green)':pct>=50?'#c47d00':'var(--np-coral)'}">${desc} &mdash; ${pct}%</div>
+        </div>
+        ${r.overall_comment ? `<div><div class="grade-section-title">Overall Assessment</div><p style="font-size:0.875rem;line-height:1.6;">${r.overall_comment}</p></div>` : ''}
+        ${criticals ? `<div><div class="grade-section-title" style="color:var(--np-coral)">Critical Issues</div>${criticals}</div>` : ''}
+        ${strengths ? `<div><div class="grade-section-title">What You Did Well</div>${strengths}</div>` : ''}
+        ${annotations ? `<div><div class="grade-section-title">Detailed Feedback</div>${annotations}</div>` : ''}
+        ${improvements ? `<div><div class="grade-section-title">Key Improvements for Next Draft</div>${improvements}</div>` : ''}
+      </div>
+    </div>`;
+}
+
+// ─────────────────────────────────────────
+// SCORE TRACKER
+// ─────────────────────────────────────────
+function updateScore() {
+  const total = (scores.lba||0) + (scores.advice||0);
+  document.getElementById('totalScoreDisplay').textContent = total;
+  document.getElementById('scoreBarFill').style.width = Math.round(total/85*100)+'%';
+}
+
+// ─────────────────────────────────────────
+// GRADING SYSTEM PROMPTS
+// ─────────────────────────────────────────
+function lbaSystemPrompt() {
+  return `You are a senior litigation partner at a UK law firm grading a trainee solicitor's Letter Before Action (LBA) for Fairway Events Ltd v Luxe Marquees Ltd.
+
+CASE SUMMARY:
+Fairway Events hired Luxe Marquees to supply/install a marquee, furniture and lighting for a corporate gala (Harringtons plc) at Langley Park Estate on 19 July 2025. Contract signed 14 March 2025, price £48,000+VAT. Deposit paid: £14,400+VAT. Balance: £33,600+VAT (unpaid).
+
+KEY FACTS:
+- Time of the essence: installation by 5pm 17 July 2025 (Clause 2.2)
+- Liquidated damages: £2,000/day delay, cap £10,000 (Clause 5.1); parties agreed genuine pre-estimate (Clause 5.2)
+- Quality clauses: 3.1/3.2 (satisfactory quality, conform to Schedule 1); 3.3 (right to replacement at Supplier's cost)
+- Indemnity: Clause 6.1 (all losses from breach, defects, negligence)
+- What went wrong: installation late (completed 18 July — 1 day late); wrong lighting (halogen not LED festoon); wrong furniture (plastic not wooden); defective workmanship (torn linings, sagging roof, uneven/creaking floor)
+- Emergency costs: replacement furniture £12,500+VAT (Elegant Hire), replacement lighting £3,800+VAT (Brightside), staff overtime £2,400 (6×8hrs×£50 — documented)
+- Harringtons cancelled 2026 contract worth ~£65,000/year — consequential loss, remoteness issue
+- Barker & Co LBA dated 2 October 2025 — NOT responded to (client's partner on maternity leave); now February 2026
+- Interest clause: 4% above Bank of England base rate (Clause 4.4)
+
+GRADING RUBRIC (45 points total):
+
+PROTOCOL (10 pts):
+- Identified as LBA with clear heading: 1pt
+- References Practice Direction — Pre-Action Conduct and Protocols: 2pts
+- Addresses delay in responding to Barker & Co October 2025 LBA: 1pt
+- Properly addressed to Barker & Co and/or Luxe directly: 1pt
+- Lists documents relied upon: 2pts
+- Proposes ADR/mediation with reference to costs consequences: 2pts
+- Sets 14-day deadline for response: 1pt
+
+DEFENCE (8 pts):
+- Disputes claim clearly and unambiguously: 2pts
+- Identifies right of set-off — counterclaim exceeds balance due: 3pts
+- Addresses contractual interest claim: 1pt
+- Links defence to specific contractual breaches: 2pts
+
+COUNTERCLAIM (22 pts):
+- Liquidated damages (Clause 5.1, £2,000 for 1 day, time of essence): 3pts
+- Replacement furniture (Clauses 3.1/3.2, £12,500+VAT, Clause 3.3 right): 3pts
+- Replacement lighting (same analysis, £3,800+VAT): 3pts
+- Staff overtime (£2,400, explains necessity): 2pts
+- Deposit recovery (repudiatory breach/total failure of consideration, £14,400+VAT, alternatively set-off): 3pts
+- Harringtons loss (consequential loss, approximate value stated, noted to be quantified, factual basis given): 4pts
+- Summary table of all heads of loss with totals: 2pts
+- Breaches clearly identified (Clause 2.2 late, Clauses 3.1/3.2 non-conforming, defective installation): 2pts
+
+QUALITY (5 pts):
+- Professional tone — firm but measured: 2pts
+- Correct party names throughout: 1pt
+- Logical structure (defence → breaches → counterclaim → procedure): 1pt
+- Sent on partner authority: 1pt
+
+DEDUCTIONS:
+- Includes privileged advice/strategy/weakness assessment: -5pts
+- Aggressive/threatening/unprofessional tone: -3pts
+- Claims full £65,000 revenue as damages without noting needs quantification: -2pts
+
+IMPORTANT: Check carefully for privileged material (weakness assessments, admissions about own position's weaknesses). This is the most serious error — the LBA goes to the other side.
+
+Return ONLY valid JSON in this exact structure:
+\`\`\`json
+{
+  "score": <number 0-45>,
+  "max_score": 45,
+  "grade": "<Distinction|Merit|Pass|Refer>",
+  "overall_comment": "<2-3 sentences assessing the draft overall>",
+  "annotations": [
+    {"category": "<Protocol|Defence|Counterclaim|Quality|Deduction>", "type": "<positive|negative|neutral>", "title": "<short title>", "comment": "<specific feedback referencing the rubric>", "points": <number, positive or negative>}
+  ],
+  "strengths": ["<specific strength>"],
+  "improvements": ["<specific improvement needed>"],
+  "critical_errors": ["<critical error if any — especially privileged material or missing Harringtons remoteness>"]
+}
+\`\`\`
+Grade boundaries: Distinction 38+, Merit 31-37, Pass 23-30, Refer below 23.`;
+}
+
+function adviceSystemPrompt() {
+  return `You are a senior litigation partner at a UK law firm grading a trainee solicitor's Client Advice Note for Fairway Events Ltd v Luxe Marquees Ltd.
+
+Same case facts as above. The advice note is PRIVILEGED — it should be candid and balanced. The client has specifically asked for a realistic assessment of strengths AND weaknesses.
+
+KEY LEGAL ISSUES THE NOTE MUST ADDRESS:
+1. Set-off defence — strong; counterclaim exceeds Luxe's claim
+2. Liquidated damages (Clause 5.1) — very strong; £2,000 for 1 day; note potential Makdessi penalty argument but Clause 5.2 addresses it
+3. Replacement furniture/lighting — strong direct loss; reasonable mitigation; could Luxe argue client should have found cheaper alternatives?
+4. Staff overtime — strong; documented and reasonable
+5. Deposit recovery — WEAKEST HEAD: total failure of consideration very difficult (event went ahead — partial performance); affirmation risk (client continued without terminating); distinguish repudiatory breach argument
+6. Harringtons loss — CRITICAL ISSUES:
+   a) Remoteness: Hadley v Baxendale two-limb test — was losing a corporate client within Luxe's reasonable contemplation at contract date?
+   b) Revenue vs profit: client wants £65,000 but this is REVENUE — must deduct costs of performing the Harringtons contract to calculate lost profit
+   c) Causation: Luxe's breach must be a material cause of losing Harringtons
+   d) Mitigation: has client done enough to replace lost business?
+7. Guest who tripped — OLA/negligence claim risk; Clause 6.1 indemnity from Luxe; contribution under Civil Liability (Contribution) Act 1978; notify insurer immediately
+8. Limitation — well within 6 years (breach July 2025, expires July 2031)
+9. Track allocation — fast track if under £25k; multi-track if Harringtons included (likely over £25k)
+10. Pre-action delay — manageable; explain to court if necessary; no irremediable prejudice
+11. ADR — recommend mediation; Halsey v Milton Keynes costs consequences
+12. Costs — standard basis recovery; warn client of shortfall between actual and recovered costs
+
+GRADING RUBRIC (40 points total):
+
+LEGAL ANALYSIS:
+- Defence to Luxe claim: set-off explained, assessed as strong: 3pts
+- Liquidated damages: very strong, addresses Makdessi: 2pts
+- Replacement furniture: strong, addresses mitigation argument: 3pts
+- Replacement lighting: same analysis: 2pts
+- Staff overtime: reasonableness, potential scrutiny: 2pts
+- Deposit recovery: identifies as WEAKEST HEAD, analyses TFC vs repudiatory breach, acknowledges affirmation risk, realistic prospects: 4pts
+- Harringtons — remoteness analysis citing Hadley v Baxendale: this block is worth 5pts TOTAL and is CRITICAL
+- Harringtons — revenue vs profit distinction: included in the 5pt block, CRITICAL
+- Harringtons — causation and mitigation analysis
+- Harringtons — realistic recovery range
+- Guest who tripped: Clause 6.1 indemnity, CLCA 1978 contribution, insurer notification: 3pts
+
+PROCEDURAL:
+- Limitation (6 years confirmed): 1pt
+- Track allocation (fast vs multi-track): 2pts
+- Pre-action protocol delay addressed: 2pts
+- ADR recommendation with Halsey: 2pts
+- Costs (standard basis shortfall): 1pt
+
+QUALITY:
+- Balanced and realistic — identifies risks honestly: 3pts
+- Best/realistic/worst-case scenarios with figures and settlement range: 2pts
+- Practical next steps (profit margin data, comparative quote, guest contact, mitigation evidence): 2pts
+- Appropriate privilege caveats: 1pt
+
+DEDUCTIONS:
+- Overly optimistic (everything will succeed): -5pts
+- No remoteness analysis for Harringtons: -4pts
+- Fails to distinguish revenue from profit on Harringtons: -3pts
+
+Return ONLY valid JSON:
+\`\`\`json
+{
+  "score": <number 0-40>,
+  "max_score": 40,
+  "grade": "<Distinction|Merit|Pass|Refer>",
+  "overall_comment": "<2-3 sentences>",
+  "annotations": [
+    {"category": "<Legal Analysis|Procedural|Quality|Deduction>", "type": "<positive|negative|neutral>", "title": "<short title>", "comment": "<specific feedback>", "points": <number>}
+  ],
+  "strengths": ["<specific strength>"],
+  "improvements": ["<specific improvement>"],
+  "critical_errors": ["<critical error — especially Harringtons remoteness or profit vs revenue>"]
+}
+\`\`\`
+Grade boundaries: Distinction 34+, Merit 28-33, Pass 20-27, Refer below 20.`;
+}
+
+// ─────────────────────────────────────────
+// CATHERINE OSEI CHAT
+// ─────────────────────────────────────────
+let chatHistory = [];
+
+function toggleChat() {
+  const win = document.getElementById('chatWindow');
+  win.classList.toggle('open');
+  if (win.classList.contains('open')) {
+    document.getElementById('chatUnread').style.display = 'none';
+    document.getElementById('chatInput').focus();
+  }
+}
+
+async function sendChat() {
+  const input = document.getElementById('chatInput');
+  const msg = input.value.trim();
+  if (!msg) return;
+
+  requireKey(async () => {
+    input.value = '';
+    addChatMsg(msg, 'user');
+    chatHistory.push({ role: 'user', content: msg });
+
+    const btn = document.getElementById('chatSendBtn');
+    btn.disabled = true;
+    const typingId = addTypingIndicator();
+
+    try {
+      const res = await fetch('https://api.anthropic.com/v1/messages', {
+        method: 'POST',
+        headers: {
+          'content-type': 'application/json',
+          'x-api-key': apiKey,
+          'anthropic-version': '2023-06-01',
+          'anthropic-dangerous-direct-browser-access': 'true'
+        },
+        body: JSON.stringify({
+          model: 'claude-sonnet-4-6',
+          max_tokens: 400,
+          system: catherinePrompt(),
+          messages: chatHistory.slice(-12)
+        })
+      });
+      const data = await res.json();
+      const reply = data.content?.[0]?.text || 'Sorry, I\'m not available right now.';
+      removeTypingIndicator(typingId);
+      addChatMsg(reply, 'ai');
+      chatHistory.push({ role: 'assistant', content: reply });
+    } catch {
+      removeTypingIndicator(typingId);
+      addChatMsg('I\'m not available at the moment — check the connection and try again.', 'ai');
+    }
+    btn.disabled = false;
+  });
+}
+
+function addChatMsg(text, type) {
+  const el = document.createElement('div');
+  el.className = 'chat-msg ' + type;
+  el.innerHTML = (type==='ai' ? '<div class="chat-sender">Catherine Osei</div>' : '') +
+    '<div class="chat-bubble">' + text + '</div>';
+  const msgs = document.getElementById('chatMessages');
+  msgs.appendChild(el);
+  msgs.scrollTop = msgs.scrollHeight;
+  if (type==='ai' && !document.getElementById('chatWindow').classList.contains('open')) {
+    document.getElementById('chatUnread').style.display = 'block';
+  }
+}
+
+function addTypingIndicator() {
+  const id = 'typing_' + Date.now();
+  const el = document.createElement('div');
+  el.id = id; el.className = 'chat-msg ai';
+  el.innerHTML = '<div class="chat-sender">Catherine Osei</div>' +
+    '<div class="chat-bubble"><span style="display:inline-flex;gap:4px;align-items:center">' +
+    '<span style="width:6px;height:6px;background:var(--np-mid-grey);border-radius:50%;animation:bounce 1.2s infinite"></span>' +
+    '<span style="width:6px;height:6px;background:var(--np-mid-grey);border-radius:50%;animation:bounce 1.2s 0.2s infinite"></span>' +
+    '<span style="width:6px;height:6px;background:var(--np-mid-grey);border-radius:50%;animation:bounce 1.2s 0.4s infinite"></span>' +
+    '</span></div>';
+  const msgs = document.getElementById('chatMessages');
+  msgs.appendChild(el);
+  msgs.scrollTop = msgs.scrollHeight;
+  return id;
+}
+
+function removeTypingIndicator(id) {
+  const el = document.getElementById(id);
+  if (el) el.remove();
+}
+
+function catherinePrompt() {
+  return `You are Catherine Osei, a senior litigation partner at a UK law firm. You are supervising a trainee solicitor on the Fairway Events Ltd v Luxe Marquees Ltd matter.
+
+The trainee is working on two documents:
+1. A Letter Before Action on behalf of Fairway Events (in response to Barker & Co's LBA claiming £40,858)
+2. A privileged Client Advice Note for Rebecca Haines
+
+KEY FACTS you know: Luxe Marquees supplied marquee equipment for a corporate gala (Harringtons plc) on 19 July 2025. Installation was one day late (breach of Clause 2.2 time of the essence). Wrong lighting delivered (halogen not LED). Wrong furniture (plastic not wooden). Defective workmanship (torn linings, sagging roof, uneven floor — one guest tripped). Client hired emergency replacements: furniture £12,500, lighting £3,800, overtime £2,400. Harringtons cancelled 2026 contract worth ~£65,000/year. Client's October 2025 LBA response was missed because the previous partner (you) were on maternity leave.
+
+YOUR STYLE: Be a helpful but Socratic supervisor. Guide the trainee to think through issues themselves — don't just give them the answer. Ask them a question back when appropriate. Be encouraging but rigorous. Keep responses to 2–4 sentences. Sound like a busy partner who genuinely wants to help but expects the trainee to do the thinking.
+
+IMPORTANT ISSUES TO PROBE IF RAISED:
+- Harringtons: always ask about remoteness (Hadley v Baxendale) and revenue vs profit
+- Deposit recovery: remind them the event went ahead — is total failure of consideration really arguable?
+- Privilege: remind them the LBA goes to the other side if they seem to be mixing up the two documents
+- The delay in responding: reassure them it's manageable, explain what to say`;
+}
+
+// ─────────────────────────────────────────
+// INIT
+// ─────────────────────────────────────────
+goStep(1);
+showDoc('email');
+// Pre-apply step 1 flex layout
+document.getElementById('step1').style.display = 'flex';
+document.getElementById('step1').style.flexDirection = 'column';
+document.getElementById('step1').style.gap = '16px';
+</script>
+</body>
+</html>

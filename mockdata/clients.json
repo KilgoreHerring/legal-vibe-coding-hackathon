@@ -1,0 +1,20 @@
+{
+  "_note": "Fictional client list. All companies are invented; any resemblance to real entities is coincidental.",
+  "clients": [
+    { "id": "c001", "name": "Northwind Industries Ltd", "sector": "Manufacturing", "size": "Mid-market", "hq": "Birmingham, UK", "relationshipPartner": "p002", "since": "2017-03-14", "notes": "Long-standing corporate client. Family-owned, third generation. Recent ownership transition." },
+    { "id": "c002", "name": "Helix Therapeutics plc", "sector": "Biotech", "size": "Listed (AIM)", "hq": "Cambridge, UK", "relationshipPartner": "p001", "since": "2019-11-02", "notes": "AIM-listed; we advised on IPO. Active corporate and IP work." },
+    { "id": "c003", "name": "Cobalt Energy Holdings", "sector": "Energy", "size": "Large private", "hq": "Aberdeen, UK", "relationshipPartner": "p004", "since": "2021-06-21", "notes": "PE-backed (Tessera Capital). Active financing." },
+    { "id": "c004", "name": "Westgate Property Partners LLP", "sector": "Real Estate", "size": "Mid-market", "hq": "London, UK", "relationshipPartner": "p006", "since": "2015-09-08", "notes": "Commercial landlord. Significant West London portfolio." },
+    { "id": "c005", "name": "Tessera Capital Partners", "sector": "Private Equity", "size": "Asset manager", "hq": "London, UK", "relationshipPartner": "p001", "since": "2014-04-12", "notes": "Mid-market PE. Sponsor work across portfolio." },
+    { "id": "c006", "name": "Brindle Foods plc", "sector": "FMCG", "size": "Listed (Main Market)", "hq": "Reading, UK", "relationshipPartner": "p008", "since": "2018-01-30", "notes": "Major commercial and supply-chain instructions." },
+    { "id": "c007", "name": "Lattice Networks Ltd", "sector": "Technology / SaaS", "size": "Scale-up", "hq": "Manchester, UK", "relationshipPartner": "p002", "since": "2022-10-17", "notes": "Series B. Privacy and IP focus alongside corporate work." },
+    { "id": "c008", "name": "Quill Media Group Ltd", "sector": "Media", "size": "Mid-market", "hq": "London, UK", "relationshipPartner": "p007", "since": "2016-07-03", "notes": "Trade marks, licensing, occasional disputes." },
+    { "id": "c009", "name": "Pemberton Construction Ltd", "sector": "Construction", "size": "Large private", "hq": "Leeds, UK", "relationshipPartner": "p005", "since": "2013-02-19", "notes": "Recurring construction disputes work." },
+    { "id": "c010", "name": "Albion Retail Holdings plc", "sector": "Retail", "size": "Listed (Main Market)", "hq": "London, UK", "relationshipPartner": "p008", "since": "2012-11-25", "notes": "Estates portfolio; 1954 Act renewals; commercial supply." },
+    { "id": "c011", "name": "Marston Pharmaceuticals Ltd", "sector": "Pharma", "size": "Large private", "hq": "Slough, UK", "relationshipPartner": "p007", "since": "2020-05-04", "notes": "Patent-heavy; co-existence agreements." },
+    { "id": "c012", "name": "Kingfisher Logistics Ltd", "sector": "Logistics", "size": "Mid-market", "hq": "Bristol, UK", "relationshipPartner": "p003", "since": "2019-08-14", "notes": "TUPE and large-scale workforce restructure exposure." },
+    { "id": "c013", "name": "Saxon & Reed Insurance plc", "sector": "Insurance", "size": "Listed (Main Market)", "hq": "London, UK", "relationshipPartner": "p005", "since": "2011-09-20", "notes": "Regulatory disputes; FCA correspondence." },
+    { "id": "c014", "name": "Mercer Coaching Group", "sector": "Sport & Leisure", "size": "Small business", "hq": "Edinburgh, UK", "relationshipPartner": "p008", "since": "2024-02-10", "notes": "Newer relationship. Commercial and consumer-facing T&Cs." },
+    { "id": "c015", "name": "Bramble & Finch LLP", "sector": "Legal", "size": "Mid-market", "hq": "London, UK", "relationshipPartner": "p001", "since": "2023-04-01", "notes": "Boutique law firm; PII renewal and consultancy IP work." }
+  ]
+}
